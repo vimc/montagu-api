@@ -84,7 +84,7 @@ also with a numeric primary key.
             "name": "member",
             "scope_prefix": "modelling-group",            
             "description": "Member of the group",
-            "permissions": [ "estimates.read-unfinished", "coverage.read" ]
+            "permissions": [ "estimates.read-unfinished", "coverage.read", "roles.read" ]
         },
         {
             "name": "uploader",
