@@ -10,7 +10,11 @@ object Config
         val global = File("/etc/montagu/api/config.properties")
         if (global.exists())
         {
-            global.inputStream().use { load(it) }
+            val externalProperties = Properties().apply{
+                global.inputStream().use { load(it) }
+            }
+
+            putAll(externalProperties)
         }
     }
 
