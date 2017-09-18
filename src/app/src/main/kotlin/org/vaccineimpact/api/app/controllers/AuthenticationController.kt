@@ -20,9 +20,9 @@ import spark.route.HttpMethod
 class AuthenticationController(context: ControllerContext, htmlFormHelpers: FormHelpers? = null) : AbstractController(context)
 {
     override val urlComponent = "/"
-    override fun endpoints(repos: RepositoryFactory) = listOf(
-            oneRepoEndpoint("authenticate/", this::authenticate, repos, { it.user }, HttpMethod.post)
-                    .withAdditionalSetup({ url, _, repoFactory -> setupSecurity(url, repoFactory) })
+    override fun endpoints() = listOf(
+            oneRepoEndpoint("authenticate/", this::authenticate, { it.user }, HttpMethod.post)
+                    .withAdditionalSetup({ url, _ -> setupSecurity(url, TokenIssuingConfigFactory(RepositoryFactory())) })
     )
     private val htmlFormHelpers = htmlFormHelpers ?: HTMLFormHelpers()
 
@@ -44,9 +44,9 @@ class AuthenticationController(context: ControllerContext, htmlFormHelpers: Form
         }
     }
 
-    private fun setupSecurity(fullUrl: String, repositoryFactory: RepositoryFactory)
+    private fun setupSecurity(fullUrl: String, tokenIssuingConfigFactory: TokenIssuingConfigFactory)
     {
-        val config = TokenIssuingConfigFactory(repositoryFactory).build()
+        val config = tokenIssuingConfigFactory.build()
         before(fullUrl, SecurityFilter(
                 config,
                 DirectBasicAuthClient::class.java.simpleName,

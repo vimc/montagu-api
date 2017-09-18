@@ -12,7 +12,7 @@ import spark.Route
 import spark.Spark
 import spark.route.HttpMethod
 
-typealias SetupCallback = (String, WebTokenHelper, RepositoryFactory) -> Unit
+typealias SetupCallback = (String, WebTokenHelper) -> Unit
 
 data class Endpoint<TRoute>(
         override val urlFragment: String,
@@ -31,10 +31,10 @@ data class Endpoint<TRoute>(
         }
     }
 
-    override fun additionalSetup(url: String, tokenHelper: WebTokenHelper, repos: RepositoryFactory)
+    override fun additionalSetup(url: String, tokenHelper: WebTokenHelper)
     {
         Spark.after(url, contentType, DefaultHeadersFilter(contentType, method))
-        additionalSetupCallback?.invoke(url, tokenHelper, repos)
+        additionalSetupCallback?.invoke(url, tokenHelper)
     }
 
     override fun transform(x: Any) = when (x)
@@ -47,9 +47,9 @@ data class Endpoint<TRoute>(
 
     fun withAdditionalSetup(newCallback: SetupCallback): Endpoint<TRoute>
     {
-        return this.copy(additionalSetupCallback = { url, tokenHelper, repos ->
-            this.additionalSetupCallback?.invoke(url, tokenHelper, repos)
-            newCallback(url, tokenHelper, repos)
+        return this.copy(additionalSetupCallback = { url, tokenHelper ->
+            this.additionalSetupCallback?.invoke(url, tokenHelper)
+            newCallback(url, tokenHelper)
         })
     }
 }

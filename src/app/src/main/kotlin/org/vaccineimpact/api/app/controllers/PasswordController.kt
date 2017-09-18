@@ -23,9 +23,9 @@ class PasswordController(
 {
     override val urlComponent = "/password"
 
-    override fun endpoints(repos: RepositoryFactory): List<Endpoint<*>> = listOf(
-            oneRepoEndpoint("/set/", this::setPassword, repos, { it.user }, HttpMethod.post).secured(),
-            multiRepoEndpoint("/request_link/", this::requestLink, repos, HttpMethod.post)
+    override fun endpoints(): List<Endpoint<*>> = listOf(
+            oneRepoEndpoint("/set/", this::setPassword, { it.user }, HttpMethod.post).secured(),
+            multiRepoEndpoint("/request_link/", this::requestLink, HttpMethod.post)
     )
 
     fun setPassword(context: ActionContext, repo: UserRepository): String

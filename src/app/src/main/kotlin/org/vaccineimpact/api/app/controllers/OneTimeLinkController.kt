@@ -18,9 +18,9 @@ class OneTimeLinkController(
     override val urlComponent = ""
     val url = "/onetime_link/:token/"
 
-    override fun endpoints(repos: RepositoryFactory) = listOf(
-            oneRepoEndpoint(url, this::onetimeLink, repos, { it.token }, method = HttpMethod.get),
-            oneRepoEndpoint(url, this::onetimeLink, repos, { it.token }, method = HttpMethod.post)
+    override fun endpoints() = listOf(
+            oneRepoEndpoint(url, this::onetimeLink, { it.token }, method = HttpMethod.get),
+            oneRepoEndpoint(url, this::onetimeLink, { it.token }, method = HttpMethod.post)
     )
 
     fun onetimeLink(context: ActionContext, repo: TokenRepository): Any
@@ -28,7 +28,7 @@ class OneTimeLinkController(
         val token = context.params(":token")
         val claims = verifyToken(token, repo)
         val link = OneTimeLink.parseClaims(claims)
-        return link.perform(controllers, context, repos)
+        return link.perform(controllers, context)
     }
 
     private fun verifyToken(token: String, repo: TokenRepository): Map<String, Any>

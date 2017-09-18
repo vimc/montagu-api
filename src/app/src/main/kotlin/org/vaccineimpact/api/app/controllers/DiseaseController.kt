@@ -10,9 +10,9 @@ import org.vaccineimpact.api.models.Disease
 class DiseaseController(context: ControllerContext) : AbstractController(context)
 {
     override val urlComponent = "/diseases"
-    override fun endpoints(repos: RepositoryFactory) = listOf(
-            oneRepoEndpoint("/", this::getDiseases, repos, { it.simpleObjects }).secured(),
-            oneRepoEndpoint("/:id/", this::getDisease, repos, { it.simpleObjects }).secured()
+    override fun endpoints() = listOf(
+            oneRepoEndpoint("/", this::getDiseases, { it.simpleObjects }).secured(),
+            oneRepoEndpoint("/:id/", this::getDisease, { it.simpleObjects }).secured()
     )
 
     @Suppress("UNUSED_PARAMETER")

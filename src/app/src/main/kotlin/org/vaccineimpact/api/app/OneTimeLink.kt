@@ -9,19 +9,19 @@ data class OneTimeLink(val action: OneTimeAction,
                        val payload: Map<String, String>,
                        val queryParams: Map<String, String>)
 {
-    fun perform(controllers: MontaguControllers, actionContext: ActionContext, repositoryFactory: RepositoryFactory): Any
+    fun perform(controllers: MontaguControllers, actionContext: ActionContext): Any
     {
-        val callback = getCallback(action, controllers, repositoryFactory)
+        val callback = getCallback(action, controllers)
         val context = OneTimeLinkActionContext(payload, queryParams, actionContext)
         return callback.invoke(context)
     }
 
     private fun getCallback(
             action: OneTimeAction,
-            controllers: MontaguControllers,
-            repoFactory: RepositoryFactory
+            controllers: MontaguControllers
     ): (ActionContext) -> Any
     {
+        val repoFactory = RepositoryFactory()
         return { context ->
             repoFactory.inTransaction { repos ->
                 when (action)

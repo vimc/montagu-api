@@ -20,16 +20,15 @@ import java.time.Duration
 abstract class AbstractController(controllerContext: ControllerContext)
 {
     protected val logger: Logger = LoggerFactory.getLogger(AbstractController::class.java)
-    protected val repos = controllerContext.repositoryFactory
     private val urlBase = controllerContext.urlBase
     val tokenHelper = controllerContext.tokenHelper
 
     abstract val urlComponent: String
-    abstract fun endpoints(repos: RepositoryFactory): Iterable<EndpointDefinition<*>>
+    abstract fun endpoints(): Iterable<EndpointDefinition<*>>
 
     fun mapEndpoints(): List<String>
     {
-        return endpoints(repos).map { mapEndpoint(it, urlBase, tokenHelper) }
+        return endpoints().map { mapEndpoint(it, urlBase, tokenHelper) }
     }
 
     fun getOneTimeLinkToken(
@@ -74,7 +73,7 @@ abstract class AbstractController(controllerContext: ControllerContext)
             HttpMethod.delete -> Spark.delete(fullUrl, contentType, route, transformer)
             else -> throw UnsupportedValueException(endpoint.method)
         }
-        endpoint.additionalSetup(fullUrl, tokenHelper, repos)
+        endpoint.additionalSetup(fullUrl, tokenHelper)
         return fullUrl
     }
 

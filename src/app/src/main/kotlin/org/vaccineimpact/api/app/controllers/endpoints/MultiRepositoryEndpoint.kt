@@ -14,7 +14,6 @@ import spark.route.HttpMethod
 fun multiRepoEndpoint(
         urlFragment: String,
         route: (ActionContext, Repositories) -> Any,
-        repositoryFactory: RepositoryFactory,
         method: HttpMethod = HttpMethod.get,
         contentType: String = ContentTypes.json
 ): Endpoint<(ActionContext, Repositories) -> Any>
@@ -22,14 +21,15 @@ fun multiRepoEndpoint(
     return Endpoint(
             urlFragment,
             route,
-            { wrapRoute(it, repositoryFactory) },
+            { wrapRoute(it) },
             method,
             contentType
     )
 }
 
-private fun wrapRoute(route: (ActionContext, Repositories) -> Any, repositoryFactory: RepositoryFactory): Route
+private fun wrapRoute(route: (ActionContext, Repositories) -> Any): Route
 {
+    val repositoryFactory = RepositoryFactory()
     return Route({ req, res ->
         repositoryFactory.inTransaction { repos ->
             route(DirectActionContext(req, res), repos)

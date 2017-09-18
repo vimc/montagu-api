@@ -25,10 +25,10 @@ class UserController(
 ) : AbstractController(context)
 {
     override val urlComponent = "/users"
-    override fun endpoints(repos: RepositoryFactory): List<Endpoint<*>> = listOf(
-            oneRepoEndpoint("/:username/", this::getUser, repos, { it.user }).secured(setOf("*/users.read")),
-            oneRepoEndpoint("/", this::getUsers, repos, { it.user }).secured(setOf("*/users.read")),
-            multiRepoEndpoint("/", this::createUser, repos, method = HttpMethod.post).secured(setOf("*/users.create"))
+    override fun endpoints(): List<Endpoint<*>> = listOf(
+            oneRepoEndpoint("/:username/", this::getUser, { it.user }).secured(setOf("*/users.read")),
+            oneRepoEndpoint("/", this::getUsers, { it.user }).secured(setOf("*/users.read")),
+            multiRepoEndpoint("/", this::createUser, method = HttpMethod.post).secured(setOf("*/users.create"))
     )
 
     fun getUser(context: ActionContext, repo: UserRepository): User

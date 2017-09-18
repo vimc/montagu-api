@@ -11,7 +11,7 @@ class HomeController(
 ) : AbstractController(context)
 {
     override val urlComponent = ""
-    override fun endpoints(repos: RepositoryFactory) = listOf(
+    override fun endpoints() = listOf(
             basicEndpoint("/", this::index)
     )
 

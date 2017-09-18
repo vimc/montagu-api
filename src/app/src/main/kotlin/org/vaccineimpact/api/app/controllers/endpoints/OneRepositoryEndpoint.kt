@@ -16,7 +16,6 @@ import spark.route.HttpMethod
 fun <TRepository : Repository> oneRepoEndpoint(
         urlFragment: String,
         route: (ActionContext, TRepository) -> Any,
-        repositories: RepositoryFactory,
         repository: (Repositories) -> TRepository,
         method: HttpMethod = HttpMethod.get,
         contentType: String = ContentTypes.json
@@ -25,7 +24,7 @@ fun <TRepository : Repository> oneRepoEndpoint(
     return Endpoint(
             urlFragment,
             route,
-            { wrapRoute(it, repositories, repository) },
+            { wrapRoute(it, repository) },
             method,
             contentType
     )
@@ -33,11 +32,11 @@ fun <TRepository : Repository> oneRepoEndpoint(
 
 private fun <TRepository : Repository> wrapRoute(
         route: (ActionContext, TRepository) -> Any,
-        repoFactory: RepositoryFactory,
         repository: (Repositories) -> TRepository
 )
         : Route
 {
+    val repoFactory = RepositoryFactory()
     return Route({ req, res ->
         repoFactory.inTransaction { repos ->
             val repo = repository(repos)
