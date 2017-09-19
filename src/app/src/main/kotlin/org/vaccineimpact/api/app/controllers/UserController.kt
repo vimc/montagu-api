@@ -8,7 +8,6 @@ import org.vaccineimpact.api.app.controllers.endpoints.secured
 import org.vaccineimpact.api.app.models.CreateUser
 import org.vaccineimpact.api.app.postData
 import org.vaccineimpact.api.app.repositories.Repositories
-import org.vaccineimpact.api.app.repositories.RepositoryFactory
 import org.vaccineimpact.api.app.repositories.UserRepository
 import org.vaccineimpact.api.emails.EmailManager
 import org.vaccineimpact.api.emails.NewUserEmail

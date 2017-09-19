@@ -7,21 +7,22 @@ import org.vaccineimpact.api.app.repositories.RepositoryFactory
 
 data class OneTimeLink(val action: OneTimeAction,
                        val payload: Map<String, String>,
-                       val queryParams: Map<String, String>)
+                       val queryParams: Map<String, String>,
+                       val repoFactory: RepositoryFactory = RepositoryFactory())
 {
     fun perform(controllers: MontaguControllers, actionContext: ActionContext): Any
     {
-        val callback = getCallback(action, controllers)
+        val callback = getCallback(action, controllers, repoFactory)
         val context = OneTimeLinkActionContext(payload, queryParams, actionContext)
         return callback.invoke(context)
     }
 
     private fun getCallback(
             action: OneTimeAction,
-            controllers: MontaguControllers
+            controllers: MontaguControllers,
+            repoFactory: RepositoryFactory
     ): (ActionContext) -> Any
     {
-        val repoFactory = RepositoryFactory()
         return { context ->
             repoFactory.inTransaction { repos ->
                 when (action)

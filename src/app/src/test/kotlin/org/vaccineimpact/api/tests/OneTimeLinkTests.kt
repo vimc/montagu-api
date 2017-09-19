@@ -68,8 +68,8 @@ class OneTimeLinkTests : MontaguTests()
         }
 
         // Object under test
-        val link = OneTimeLink(OneTimeAction.COVERAGE, mapOf(":key" to "value"), mapOf(":queryKey" to "queryValue"))
-        link.perform(controllers, mock(), repos.asFactory())
+        val link = OneTimeLink(OneTimeAction.COVERAGE, mapOf(":key" to "value"), mapOf(":queryKey" to "queryValue"), repos.asFactory())
+        link.perform(controllers, mock())
 
         // Expectations
         verify(modelling).getCoverageData(check {

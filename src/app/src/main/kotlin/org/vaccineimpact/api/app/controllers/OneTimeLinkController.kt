@@ -4,7 +4,6 @@ import org.vaccineimpact.api.app.ActionContext
 import org.vaccineimpact.api.app.OneTimeLink
 import org.vaccineimpact.api.app.controllers.endpoints.oneRepoEndpoint
 import org.vaccineimpact.api.app.errors.InvalidOneTimeLinkToken
-import org.vaccineimpact.api.app.repositories.RepositoryFactory
 import org.vaccineimpact.api.app.repositories.TokenRepository
 import org.vaccineimpact.api.security.WebTokenHelper
 import spark.route.HttpMethod

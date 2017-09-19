@@ -4,7 +4,6 @@ import org.vaccineimpact.api.app.ActionContext
 import org.vaccineimpact.api.app.controllers.endpoints.oneRepoEndpoint
 import org.vaccineimpact.api.app.controllers.endpoints.secured
 import org.vaccineimpact.api.app.repositories.ModelRepository
-import org.vaccineimpact.api.app.repositories.RepositoryFactory
 import org.vaccineimpact.api.models.Model
 
 class ModelController(context: ControllerContext) : AbstractController(context)

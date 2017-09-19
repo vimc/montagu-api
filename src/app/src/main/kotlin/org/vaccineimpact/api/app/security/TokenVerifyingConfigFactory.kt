@@ -16,7 +16,7 @@ import org.vaccineimpact.api.security.WebTokenHelper
 class TokenVerifyingConfigFactory(
         tokenHelper: WebTokenHelper,
         val requiredPermissions: Set<PermissionRequirement>,
-        private val repositoryFactory: RepositoryFactory
+        private val repositoryFactory: RepositoryFactory = RepositoryFactory()
 ) : ConfigFactory
 {
     private val clients = listOf(

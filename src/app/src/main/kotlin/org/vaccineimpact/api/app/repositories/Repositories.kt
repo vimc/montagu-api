@@ -6,7 +6,7 @@ import org.jooq.impl.DSL
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.vaccineimpact.api.app.repositories.jooq.*
-import org.vaccineimpact.api.db.JooqContext
+import org.vaccineimpact.api.db.JooqContext 
 
 open class RepositoryFactory
 {

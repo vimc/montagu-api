@@ -2,7 +2,6 @@ package org.vaccineimpact.api.app.controllers.endpoints
 
 import org.vaccineimpact.api.ContentTypes
 import org.vaccineimpact.api.app.DefaultHeadersFilter
-import org.vaccineimpact.api.app.repositories.RepositoryFactory
 import org.vaccineimpact.api.app.serialization.DataTable
 import org.vaccineimpact.api.app.serialization.Serializer
 import org.vaccineimpact.api.app.serialization.SplitData

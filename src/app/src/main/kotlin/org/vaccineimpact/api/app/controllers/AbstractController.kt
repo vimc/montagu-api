@@ -8,7 +8,6 @@ import org.vaccineimpact.api.app.OneTimeLinkActionContext
 import org.vaccineimpact.api.app.controllers.endpoints.EndpointDefinition
 import org.vaccineimpact.api.app.controllers.endpoints.getWrappedRoute
 import org.vaccineimpact.api.app.errors.UnsupportedValueException
-import org.vaccineimpact.api.app.repositories.RepositoryFactory
 import org.vaccineimpact.api.app.repositories.TokenRepository
 import org.vaccineimpact.api.app.serialization.Serializer
 import org.vaccineimpact.api.db.Config

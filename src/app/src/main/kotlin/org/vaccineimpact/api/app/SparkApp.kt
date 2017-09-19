@@ -47,7 +47,7 @@ class MontaguApi
         })
         ErrorHandler.setup()
 
-        val controllerContext = ControllerContext(urlBase, repositoryFactory, tokenHelper)
+        val controllerContext = ControllerContext(urlBase, tokenHelper)
         val standardControllers = MontaguControllers(controllerContext)
         val oneTimeLink = OneTimeLinkController(controllerContext, standardControllers)
         val endpoints = (standardControllers.all + oneTimeLink).flatMap {

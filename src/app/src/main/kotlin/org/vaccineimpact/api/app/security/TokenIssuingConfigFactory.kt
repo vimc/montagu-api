@@ -5,13 +5,12 @@ import org.pac4j.core.config.ConfigFactory
 import org.pac4j.core.context.HttpConstants
 import org.pac4j.http.client.direct.DirectBasicAuthClient
 import org.pac4j.sparkjava.SparkWebContext
-import org.vaccineimpact.api.app.repositories.AccessLogRepository
 import org.vaccineimpact.api.app.repositories.RepositoryFactory
 import org.vaccineimpact.api.app.serialization.Serializer
 import org.vaccineimpact.api.models.FailedAuthentication
 import spark.Spark as spk
 
-class TokenIssuingConfigFactory(private val repositoryFactory: RepositoryFactory) : ConfigFactory
+class TokenIssuingConfigFactory(private val repositoryFactory: RepositoryFactory = RepositoryFactory()) : ConfigFactory
 {
     override fun build(vararg parameters: Any?): Config
     {

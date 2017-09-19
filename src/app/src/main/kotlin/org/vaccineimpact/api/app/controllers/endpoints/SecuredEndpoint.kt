@@ -14,7 +14,7 @@ fun <TRoute> Endpoint<TRoute>.secured(permissions: Set<String> = emptySet()): En
         val allPermissions = (permissions + "*/can-login").map {
             PermissionRequirement.parse(it)
         }
-        val configFactory = TokenVerifyingConfigFactory(tokenHelper, allPermissions.toSet(), org.vaccineimpact.api.app.repositories.RepositoryFactory())
+        val configFactory = TokenVerifyingConfigFactory(tokenHelper, allPermissions.toSet())
         val tokenVerifier = configFactory.build()
         Spark.before(url, SecurityFilter(
                 tokenVerifier,

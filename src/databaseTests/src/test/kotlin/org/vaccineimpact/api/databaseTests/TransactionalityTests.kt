@@ -37,7 +37,7 @@ class TransactionalityTests : DatabaseTest()
     {
         val endpoint = multiRepoEndpoint("/", { _, repos ->
             repos.token.storeToken("TEST")
-        }, RepositoryFactory())
+        })
 
         assertThatThrownBy {
             endpoint.getWrappedRoute().handle(mock(), mock())
@@ -49,6 +49,6 @@ class TransactionalityTests : DatabaseTest()
 
     private fun makeFakeEndpoint(handler: (TokenRepository) -> Unit): Endpoint<*>
     {
-        return oneRepoEndpoint("/", { _, repo -> handler(repo) }, RepositoryFactory(), { it.token })
+        return oneRepoEndpoint("/", { _, repo -> handler(repo) }, { it.token })
     }
 }
