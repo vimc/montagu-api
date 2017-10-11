@@ -10,8 +10,6 @@ import org.vaccineimpact.api.models.permissions.ReifiedRole
 import org.vaccineimpact.api.security.UserHelper
 import org.vaccineimpact.api.security.ensureUserHasRole
 import java.math.BigDecimal
-import java.sql.Timestamp
-import java.time.Instant
 import java.util.*
 
 private val random = Random(0)
@@ -352,10 +350,11 @@ fun JooqContext.fetchDemographicUnitId(name: String): Int
             .fetchOne().value1()
 }
 
-fun JooqContext.fetchGenders(): List<Int>
+fun JooqContext.fetchGenders(vararg codes: String = arrayOf("male", "female", "both")): List<Int>
 {
     return this.dsl.select(GENDER.ID)
             .from(GENDER)
+            .where(GENDER.CODE.`in`(codes.toList()))
             .fetchInto(Int::class.java)
 }
 
@@ -398,13 +397,14 @@ fun JooqContext.generateDemographicData(
         genderId: Int,
         variantId: Int,
         countries: List<String>,
-        yearRange: IntProgression = 1950..2000 step 5,
-        ageRange: IntProgression = 0..80 step 5)
+        yearRange: IntProgression = 1900..2050 step 1,
+        ageRange: IntProgression = 0..100 step 1)
 {
     val records = mutableListOf<DemographicStatisticRecord>()
 
     for (country in countries)
     {
+        println(country)
         for (year in yearRange)
         {
             for (age in ageRange)
@@ -423,8 +423,9 @@ fun JooqContext.generateDemographicData(
 
             }
         }
+        this.dsl.batchStore(records).execute()
+        records.clear()
     }
-    this.dsl.batchStore(records).execute()
 }
 
 fun JooqContext.addDemographicSourcesToTouchstone(touchstoneId: String, sources: List<Int>)
