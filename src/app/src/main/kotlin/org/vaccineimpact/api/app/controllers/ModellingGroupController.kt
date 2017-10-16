@@ -2,6 +2,7 @@ package org.vaccineimpact.api.app.controllers
 
 import org.vaccineimpact.api.OneTimeAction
 import org.vaccineimpact.api.app.ActionContext
+import org.vaccineimpact.api.app.StreamedResponse
 import org.vaccineimpact.api.app.controllers.endpoints.EndpointDefinition
 import org.vaccineimpact.api.app.controllers.endpoints.oneRepoEndpoint
 import org.vaccineimpact.api.app.controllers.endpoints.secured
@@ -12,12 +13,10 @@ import org.vaccineimpact.api.app.errors.UnknownObjectError
 import org.vaccineimpact.api.app.filters.ScenarioFilterParameters
 import org.vaccineimpact.api.app.postData
 import org.vaccineimpact.api.app.repositories.*
-import org.vaccineimpact.api.app.serialization.DataTable
 import org.vaccineimpact.api.app.serialization.DataTableDeserializer
 import org.vaccineimpact.api.app.serialization.Serializer
 import org.vaccineimpact.api.app.serialization.SplitData
 import org.vaccineimpact.api.models.*
-import org.vaccineimpact.api.models.permissions.AssociateRole
 import org.vaccineimpact.api.models.permissions.ReifiedPermission
 import spark.route.HttpMethod
 import java.time.Instant
@@ -47,7 +46,7 @@ open class ModellingGroupController(context: ControllerContext)
                 oneRepoEndpoint("$responsibilitiesURL/", this::getResponsibilities, repos, repo).secured(responsibilityPermissions),
                 oneRepoEndpoint("$scenarioURL/", this::getResponsibility, repos, repo).secured(responsibilityPermissions),
                 oneRepoEndpoint("$scenarioURL/coverage_sets/", this::getCoverageSets, repos, repo).secured(coveragePermissions),
-                oneRepoEndpoint("$coverageURL/", this::getCoverageDataAndMetadata, repos, repo, contentType = "application/json").secured(coveragePermissions),
+                oneRepoEndpoint("$coverageURL/", this::getCoverageDataAndMetadataAsStream, repos, repo, contentType = "application/json").secured(coveragePermissions),
                 oneRepoEndpoint("$coverageURL/", this::getCoverageData, repos, repo, contentType = "text/csv").secured(coveragePermissions),
                 oneRepoEndpoint("$coverageURL/get_onetime_link/", { c, r -> getOneTimeLinkToken(c, r, OneTimeAction.COVERAGE) }, repos, { it.token }).secured(coveragePermissions),
                 oneRepoEndpoint("$scenarioURL/estimates/", this::addBurdenEstimate, repos, { it.burdenEstimates }, method = HttpMethod.post)
@@ -97,18 +96,28 @@ open class ModellingGroupController(context: ControllerContext)
         return data
     }
 
-    open fun getCoverageData(context: ActionContext, repo: ModellingGroupRepository): DataTable<CoverageRow>
+    open fun getCoverageData(context: ActionContext, repo: ModellingGroupRepository): StreamedResponse
     {
         val data = getCoverageDataAndMetadata(context, repo)
         val metadata = data.structuredMetadata
         val filename = "coverage_${metadata.touchstone.id}_${metadata.scenario.id}.csv"
         context.addAttachmentHeader(filename)
-        return data.tableData
+
+        return context.streamedResponse { stream ->
+            data.tableData.serialize(stream, Serializer.instance)
+        }
+    }
+
+    fun getCoverageDataAndMetadataAsStream(context: ActionContext, repo: ModellingGroupRepository): StreamedResponse
+    {
+        return context.streamedResponse { stream ->
+            getCoverageDataAndMetadata(context, repo).serialize(stream, Serializer.instance)
+        }
     }
 
     // TODO: https://vimc.myjetbrains.com/youtrack/issue/VIMC-307
     // Use streams to speed up this process of sending large data
-    fun getCoverageDataAndMetadata(context: ActionContext, repo: ModellingGroupRepository): SplitData<ScenarioTouchstoneAndCoverageSets, CoverageRow>
+    private fun getCoverageDataAndMetadata(context: ActionContext, repo: ModellingGroupRepository): SplitData<ScenarioTouchstoneAndCoverageSets, CoverageRow>
     {
         val path = ResponsibilityPath(context)
         val data = repo.getCoverageData(path.groupId, path.touchstoneId, path.scenarioId)

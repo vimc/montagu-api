@@ -12,6 +12,7 @@ import org.vaccineimpact.api.db.Config
 import org.vaccineimpact.api.models.permissions.ReifiedPermission
 import spark.Request
 import spark.Response
+import java.io.OutputStream
 import kotlin.reflect.KClass
 
 open class DirectActionContext(private val context: SparkWebContext): ActionContext
@@ -82,4 +83,10 @@ open class DirectActionContext(private val context: SparkWebContext): ActionCont
         manager.getAll(false).singleOrNull()
     }
     override val username = userProfile?.id
+
+    override fun streamedResponse(work: (OutputStream) -> Unit): StreamedResponse
+    {
+        work(response.raw().outputStream)
+        return StreamedResponse()
+    }
 }
