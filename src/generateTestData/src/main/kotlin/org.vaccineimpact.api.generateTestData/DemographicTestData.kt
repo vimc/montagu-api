@@ -13,7 +13,7 @@ class DemographicTestData(val db: JooqContext)
     val unit = db.fetchDemographicUnitIds().first()
     val genderIds = db.fetchGenders()
     val statisticTypes = addStatisticTypes(listOf(
-            "tot-pop" to "Total population"
+            "qq-pop" to "Quinquennial population"
     ))
 
     fun generate(touchstoneId: String, diseases: List<String>)
@@ -37,7 +37,9 @@ class DemographicTestData(val db: JooqContext)
                         db.generateDemographicData(sourceId, typeId,
                                 genderId = gender,
                                 variantId = variant,
-                                countries = countries
+                                countries = countries,
+                                ageRange = 0..100 step 5,
+                                yearRange = 1950..2100 step 5
                         )
                     }
                 }
