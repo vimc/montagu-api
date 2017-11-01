@@ -6,14 +6,14 @@ import org.vaccineimpact.api.db.direct.*
 
 class DemographicTestData(val db: JooqContext)
 {
-    val variants = listOf("unwpp_estimates", "unwpp_medium_variant", "unwpp_high_variant")
-    val countries = db.fetchCountries(3)
-    val sourceNames = listOf("unwpp2015", "unwpp2017")
+    val variants = listOf("unwpp_estimates")
+    val countries = db.fetchCountries(96)
+    val sourceNames = listOf("unwpp2017")
     val variantIds = db.generateDemographicVariants(variants)
     val unit = db.fetchDemographicUnitIds().first()
     val genderIds = db.fetchGenders()
     val statisticTypes = addStatisticTypes(listOf(
-            "qq-pop" to "Quinquennial population"
+            "tot-pop" to "Quinquennial population"
     ))
 
     fun generate(touchstoneId: String, diseases: List<String>)
@@ -38,8 +38,8 @@ class DemographicTestData(val db: JooqContext)
                                 genderId = gender,
                                 variantId = variant,
                                 countries = countries,
-                                ageRange = 0..100 step 5,
-                                yearRange = 1950..2100 step 5
+                                ageRange = 0..100,
+                                yearRange = 1950..2100
                         )
                     }
                 }
