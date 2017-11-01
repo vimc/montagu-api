@@ -22,7 +22,7 @@ fun main(args: Array<String>)
         db.addTouchstone("op-2017", 2, "Operational Forecast 2017 (v2)", "open")
 
         val demographicTestData = DemographicTestData(db)
-        demographicTestData.generate("op-2017-1", listOf("YF"))
+        //demographicTestData.generate("op-2017-1", listOf("YF"))
         demographicTestData.generate("op-2017-2", listOf("YF"))
 
         val yfRoutine = db.addScenarioToTouchstone("op-2017-2", "yf-routine")
