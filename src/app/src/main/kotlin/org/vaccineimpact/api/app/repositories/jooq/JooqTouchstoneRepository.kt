@@ -26,7 +26,7 @@ class JooqTouchstoneRepository(dsl: DSLContext, private val scenarioRepository: 
     override fun getDemographicData(statisticTypeCode: String,
                                     source: String,
                                     touchstoneId: String,
-                                    gender: String): SplitData<DemographicDataForTouchstone, DemographicRow>
+                                    gender: String): SplitData<DemographicDataForTouchstone, LongDemographicRow>
     {
         val touchstone = touchstones.get(touchstoneId)
         val records = getDemographicStatistics(
@@ -114,7 +114,7 @@ class JooqTouchstoneRepository(dsl: DSLContext, private val scenarioRepository: 
     override fun getScenarioAndCoverageData(
             touchstoneId: String,
             scenarioDescId: String
-    ): SplitData<ScenarioAndCoverageSets, CoverageRow>
+    ): SplitData<ScenarioAndCoverageSets, LongCoverageRow>
     {
         val records = getCoverageSetsForScenario(touchstoneId, scenarioDescId, includeCoverageData = true)
         val scenario = getScenariosFromRecords(records).singleOrNull()
@@ -303,9 +303,7 @@ class JooqTouchstoneRepository(dsl: DSLContext, private val scenarioRepository: 
             record[DEMOGRAPHIC_STATISTIC_TYPE.CODE],
             record[DEMOGRAPHIC_STATISTIC_TYPE.NAME],
             record[DEMOGRAPHIC_STATISTIC_TYPE.GENDER_IS_APPLICABLE],
-            record[DEMOGRAPHIC_SOURCE.CODE],
-            listOf(),
-            listOf(record[DEMOGRAPHIC_SOURCE.CODE]))
+            record[DEMOGRAPHIC_SOURCE.CODE])
 
     private fun mapCoverageSet(record: Record) = CoverageSet(
             record[COVERAGE_SET.ID],
@@ -316,7 +314,7 @@ class JooqTouchstoneRepository(dsl: DSLContext, private val scenarioRepository: 
             mapEnum(record[COVERAGE_SET.ACTIVITY_TYPE])
     )
 
-    private fun mapCoverageRow(record: Record, scenarioDescriptionId: String) = CoverageRow(
+    private fun mapCoverageRow(record: Record, scenarioDescriptionId: String) = LongCoverageRow(
             scenarioDescriptionId,
             record[COVERAGE_SET.NAME],
             record[COVERAGE_SET.VACCINE],
@@ -332,7 +330,7 @@ class JooqTouchstoneRepository(dsl: DSLContext, private val scenarioRepository: 
             record[COVERAGE.COVERAGE_]
     )
 
-    private fun mapDemographicRow(record: Record) = DemographicRow(
+    private fun mapDemographicRow(record: Record) = LongDemographicRow(
             record[COUNTRY.NID],
             record[DEMOGRAPHIC_STATISTIC.COUNTRY],
             record[COUNTRY.NAME],
