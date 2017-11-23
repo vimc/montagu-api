@@ -12,6 +12,8 @@ import org.jooq.Result;
 import org.jooq.impl.DSL;
 import org.vaccineimpact.api.db.routines.DisableTrigger;
 import org.vaccineimpact.api.db.routines.EnableTrigger;
+import org.vaccineimpact.api.db.routines.PostgresFdwHandler;
+import org.vaccineimpact.api.db.routines.PostgresFdwValidator;
 import org.vaccineimpact.api.db.tables.SelectBurdenData1;
 import org.vaccineimpact.api.db.tables.SelectBurdenData2;
 import org.vaccineimpact.api.db.tables.SelectBurdenData3;
@@ -63,6 +65,36 @@ public class Routines {
         EnableTrigger p = new EnableTrigger();
         p.setTableName(tableName);
         p.setTriggerName(triggerName);
+
+        p.execute(configuration);
+    }
+
+    /**
+     * Call <code>public.postgres_fdw_handler</code>
+     */
+    public static Object postgresFdwHandler(Configuration configuration) {
+        PostgresFdwHandler f = new PostgresFdwHandler();
+
+        f.execute(configuration);
+        return f.getReturnValue();
+    }
+
+    /**
+     * Get <code>public.postgres_fdw_handler</code> as a field.
+     */
+    public static Field<Object> postgresFdwHandler() {
+        PostgresFdwHandler f = new PostgresFdwHandler();
+
+        return f.asField();
+    }
+
+    /**
+     * Call <code>public.postgres_fdw_validator</code>
+     */
+    public static void postgresFdwValidator(Configuration configuration, String[] __1, Long __2) {
+        PostgresFdwValidator p = new PostgresFdwValidator();
+        p.set__1(__1);
+        p.set__2(__2);
 
         p.execute(configuration);
     }

@@ -44,6 +44,11 @@ public class Sequences {
     public static final Sequence<Long> BURDEN_ESTIMATE_SET_PROBLEM_ID_SEQ = new SequenceImpl<Long>("burden_estimate_set_problem_id_seq", Public.PUBLIC, org.jooq.impl.SQLDataType.BIGINT.nullable(false));
 
     /**
+     * The sequence <code>public.burden_estimate_stochastic_id_seq</code>
+     */
+    public static final Sequence<Long> BURDEN_ESTIMATE_STOCHASTIC_ID_SEQ = new SequenceImpl<Long>("burden_estimate_stochastic_id_seq", Public.PUBLIC, org.jooq.impl.SQLDataType.BIGINT.nullable(false));
+
+    /**
      * The sequence <code>public.burden_outcome_id_seq</code>
      */
     public static final Sequence<Long> BURDEN_OUTCOME_ID_SEQ = new SequenceImpl<Long>("burden_outcome_id_seq", Public.PUBLIC, org.jooq.impl.SQLDataType.BIGINT.nullable(false));

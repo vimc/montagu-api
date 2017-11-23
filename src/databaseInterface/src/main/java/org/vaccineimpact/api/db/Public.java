@@ -26,6 +26,7 @@ import org.vaccineimpact.api.db.tables.BurdenEstimateSet;
 import org.vaccineimpact.api.db.tables.BurdenEstimateSetProblem;
 import org.vaccineimpact.api.db.tables.BurdenEstimateSetStatus;
 import org.vaccineimpact.api.db.tables.BurdenEstimateSetType;
+import org.vaccineimpact.api.db.tables.BurdenEstimateStochastic;
 import org.vaccineimpact.api.db.tables.BurdenOutcome;
 import org.vaccineimpact.api.db.tables.Country;
 import org.vaccineimpact.api.db.tables.CountryMetadata;
@@ -114,7 +115,7 @@ import org.vaccineimpact.api.db.tables.records.SelectBurdenDataColRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Public extends SchemaImpl {
 
-    private static final long serialVersionUID = 1183270767;
+    private static final long serialVersionUID = -636597794;
 
     /**
      * The reference instance of <code>public</code>
@@ -160,6 +161,11 @@ public class Public extends SchemaImpl {
      * The table <code>public.burden_estimate_set_type</code>.
      */
     public final BurdenEstimateSetType BURDEN_ESTIMATE_SET_TYPE = org.vaccineimpact.api.db.tables.BurdenEstimateSetType.BURDEN_ESTIMATE_SET_TYPE;
+
+    /**
+     * The table <code>public.burden_estimate_stochastic</code>.
+     */
+    public final BurdenEstimateStochastic BURDEN_ESTIMATE_STOCHASTIC = org.vaccineimpact.api.db.tables.BurdenEstimateStochastic.BURDEN_ESTIMATE_STOCHASTIC;
 
     /**
      * The table <code>public.burden_outcome</code>.
@@ -699,6 +705,7 @@ public class Public extends SchemaImpl {
             Sequences.BURDEN_ESTIMATE_ID_SEQ,
             Sequences.BURDEN_ESTIMATE_SET_ID_SEQ,
             Sequences.BURDEN_ESTIMATE_SET_PROBLEM_ID_SEQ,
+            Sequences.BURDEN_ESTIMATE_STOCHASTIC_ID_SEQ,
             Sequences.BURDEN_OUTCOME_ID_SEQ,
             Sequences.COUNTRY_METADATA_ID_SEQ,
             Sequences.COUNTRY_VACCINE_METADATA_ID_SEQ,
@@ -753,6 +760,7 @@ public class Public extends SchemaImpl {
             BurdenEstimateSetProblem.BURDEN_ESTIMATE_SET_PROBLEM,
             BurdenEstimateSetStatus.BURDEN_ESTIMATE_SET_STATUS,
             BurdenEstimateSetType.BURDEN_ESTIMATE_SET_TYPE,
+            BurdenEstimateStochastic.BURDEN_ESTIMATE_STOCHASTIC,
             BurdenOutcome.BURDEN_OUTCOME,
             Country.COUNTRY,
             CountryMetadata.COUNTRY_METADATA,
