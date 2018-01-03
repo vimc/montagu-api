@@ -1,11 +1,9 @@
 package org.vaccineimpact.api.security
 
 import org.pac4j.core.profile.CommonProfile
-import org.pac4j.jwt.config.signature.RSASignatureConfiguration
 import org.pac4j.jwt.profile.JwtGenerator
 import org.vaccineimpact.api.db.Config
 import org.vaccineimpact.api.models.Result
-import org.vaccineimpact.api.models.helpers.OneTimeAction
 import org.vaccineimpact.api.serialization.MontaguSerializer
 import org.vaccineimpact.api.serialization.Serializer
 import java.security.KeyPair
@@ -19,7 +17,7 @@ open class WebTokenHelper(keyPair: KeyPair,
 {
     open val lifeSpan: Duration = Duration.ofSeconds(Config["token.lifespan"].toLong())
     val issuer = Config["token.issuer"]
-    val signatureConfiguration = RSASignatureConfiguration(keyPair)
+    val signatureConfiguration = MontaguRSASignatureConfiguration(keyPair)
     val generator = JwtGenerator<CommonProfile>(signatureConfiguration)
     private val random = SecureRandom()
 
