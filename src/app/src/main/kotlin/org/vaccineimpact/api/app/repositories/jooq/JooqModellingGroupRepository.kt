@@ -95,7 +95,7 @@ class JooqModellingGroupRepository(
         getModellingGroup(groupId)
         val touchstone = getTouchstone(touchstoneId)
         val responsibilitySet = getResponsibilitySet(groupId, touchstoneId)
-        val responsibilities = getResponsibilities(responsibilitySet, scenarioFilterParameters, touchstoneId)
+        val responsibilities = getResponsibilities(touchstone.status, responsibilitySet, scenarioFilterParameters, touchstoneId)
         return ResponsibilitiesAndTouchstoneStatus(responsibilities, touchstone.status)
     }
 
@@ -106,7 +106,7 @@ class JooqModellingGroupRepository(
         val responsibilitySet = getResponsibilitySet(groupId, touchstoneId)
         if (responsibilitySet != null)
         {
-            val responsibility = getResponsibilitiesInResponsibilitySet(
+            val responsibility = getResponsibilitiesInResponsibilitySet(touchstone.status,
                     responsibilitySet,
                     { this.and(SCENARIO_DESCRIPTION.ID.eq(scenarioId)) }
             ).singleOrNull() ?: throw UnknownObjectError(scenarioId, "responsibility")
@@ -222,13 +222,14 @@ class JooqModellingGroupRepository(
         )
     }
 
-    private fun getResponsibilities(responsibilitySet: ResponsibilitySetRecord?,
+    private fun getResponsibilities(touchstoneStatus: TouchstoneStatus,
+                                    responsibilitySet: ResponsibilitySetRecord?,
                                     scenarioFilterParameters: ScenarioFilterParameters,
                                     touchstoneId: String): Responsibilities
     {
         if (responsibilitySet != null)
         {
-            val responsibilities = getResponsibilitiesInResponsibilitySet(
+            val responsibilities = getResponsibilitiesInResponsibilitySet(touchstoneStatus,
                     responsibilitySet,
                     { this.whereMatchesFilter(JooqScenarioFilter(), scenarioFilterParameters) }
             )
@@ -242,20 +243,30 @@ class JooqModellingGroupRepository(
     }
 
     private fun getResponsibilitiesInResponsibilitySet(
+            touchstoneStatus: TouchstoneStatus,
             responsibilitySet: ResponsibilitySetRecord,
             applyWhereFilter: SelectConditionStep<Record2<String, Int>>.() -> SelectConditionStep<Record2<String, Int>>)
             : List<Responsibility>
     {
-        val records = dsl
+        val query = dsl
                 .select(SCENARIO_DESCRIPTION.ID, RESPONSIBILITY.ID)
                 .fromJoinPath(RESPONSIBILITY_SET, RESPONSIBILITY, SCENARIO, SCENARIO_DESCRIPTION)
                 .where(RESPONSIBILITY.RESPONSIBILITY_SET.eq(responsibilitySet.id))
-                // TODO remove this once VIMC-1240 is done
-                // this check is needed for the situation where a group has a responsibility set with
-                // multiple diseases, but we want to 'close' some and not others for a touchstone
-                // it will be obsolete when we refactor responsibility sets to be single disease only
-                .and(RESPONSIBILITY.IS_OPEN)
                 .applyWhereFilter()
+
+        val finalQuery = if (touchstoneStatus == TouchstoneStatus.OPEN)
+        {
+            // TODO remove this once VIMC-1240 is done
+            // this check is needed for the situation where a group has a responsibility set with
+            // multiple diseases, but we want to 'close' some and not others for a touchstone
+            // it will be obsolete when we refactor responsibility sets to be single disease only
+            query.and(RESPONSIBILITY.IS_OPEN)
+        }
+        else
+        {
+            query
+        }
+        val records = finalQuery
                 .fetch()
                 .intoMap(SCENARIO_DESCRIPTION.ID)
 
