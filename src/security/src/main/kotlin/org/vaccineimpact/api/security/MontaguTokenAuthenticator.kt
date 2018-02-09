@@ -5,7 +5,7 @@ import org.pac4j.core.credentials.TokenCredentials
 import org.pac4j.core.exception.CredentialsException
 import org.pac4j.jwt.credentials.authenticator.JwtAuthenticator
 
-class MontaguTokenAuthenticator(private val tokenHelper: WebTokenHelper)
+open class MontaguTokenAuthenticator(private val tokenHelper: WebTokenHelper)
     : JwtAuthenticator(tokenHelper.signatureConfiguration)
 {
     override fun createJwtProfile(credentials: TokenCredentials, jwt: JWT)

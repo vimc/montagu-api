@@ -15,13 +15,15 @@ import org.vaccineimpact.api.security.WebTokenHelper
 
 class TokenVerifyingConfigFactory(
         tokenHelper: WebTokenHelper,
-        val requiredPermissions: Set<PermissionRequirement>,
+        private val requiredPermissions: Set<PermissionRequirement>,
         private val repositoryFactory: RepositoryFactory
 ) : ConfigFactory
 {
-    private val clients = listOf(
-            JWTHeaderClient(tokenHelper)
+    private val wrappedClients: List<MontaguSecurityClientWrapper> = listOf(
+            JWTHeaderClient.Wrapper(tokenHelper),
+            JWTParameterClient.Wrapper(tokenHelper, repositoryFactory)
     )
+    private val clients = wrappedClients.map { it.client }
 
     override fun build(vararg parameters: Any?): Config
     {
@@ -31,11 +33,11 @@ class TokenVerifyingConfigFactory(
         return Config(clients).apply {
             setAuthorizer(MontaguAuthorizer(requiredPermissions))
             addMethodMatchers()
-            httpActionAdapter = TokenActionAdapter(repositoryFactory)
+            httpActionAdapter = TokenActionAdapter(wrappedClients, repositoryFactory)
         }
     }
 
-    fun allClients() = clients.map { it::class.java.simpleName }.joinToString()
+    fun allClients() = clients.joinToString { it::class.java.simpleName }
 
     private fun extractPermissionsFromToken(commonProfile: CommonProfile): CommonProfile
     {
@@ -49,13 +51,10 @@ class TokenVerifyingConfigFactory(
     }
 }
 
-class TokenActionAdapter(repositoryFactory: RepositoryFactory)
+class TokenActionAdapter(wrappedClients: List<MontaguSecurityClientWrapper>, repositoryFactory: RepositoryFactory)
     : MontaguHttpActionAdapter(repositoryFactory)
 {
-    private val unauthorizedResponse = listOf(ErrorInfo(
-            "bearer-token-invalid",
-            "Bearer token not supplied in Authorization header, or bearer token was invalid"
-    ))
+    private val unauthorizedResponse: List<ErrorInfo> = wrappedClients.map { it.authorizationError }
 
     private fun forbiddenResponse(missingPermissions: Set<String>) = MissingRequiredPermissionError(missingPermissions).problems
 
