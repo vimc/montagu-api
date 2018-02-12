@@ -11,7 +11,7 @@ import org.vaccineimpact.api.app.contents
 import org.vaccineimpact.api.app.errors.BadRequest
 import org.vaccineimpact.api.app.errors.MissingRequiredMultipartParameterError
 import org.vaccineimpact.api.app.errors.MissingRequiredPermissionError
-import org.vaccineimpact.api.app.security.montaguPermissions
+import org.vaccineimpact.api.app.security.adapted
 import org.vaccineimpact.api.db.Config
 import org.vaccineimpact.api.models.permissions.ReifiedPermission
 import org.vaccineimpact.api.serialization.DataTableDeserializer
@@ -111,12 +111,12 @@ class DirectActionContext(private val context: SparkWebContext,
     {
         if (!hasPermission(requirement))
         {
-            throw MissingRequiredPermissionError(setOf(requirement.toString()))
+            throw MissingRequiredPermissionError(setOf(requirement))
         }
     }
 
     override val permissions by lazy {
-        userProfile!!.montaguPermissions()
+        userProfile!!.adapted().permissions
     }
 
     override val userProfile: CommonProfile? by lazy {

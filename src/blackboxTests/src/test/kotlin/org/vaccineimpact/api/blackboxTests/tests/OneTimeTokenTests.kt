@@ -21,7 +21,7 @@ class OneTimeTokenTests : DatabaseTest()
     }
 
     @Test
-    fun `can use onetime token to access link`()
+    fun `can use onetime token to access URL`()
     {
         val desiredUrl = "/touchstones/"
         val permissions = PermissionSet("*/can-login", "*/touchstones.read")
@@ -32,5 +32,20 @@ class OneTimeTokenTests : DatabaseTest()
         val response = RequestHelper().get("$desiredUrl?access_token=$oneTimeToken")
 
         JSONValidator().validateSuccess(response.text)
+    }
+
+    @Test
+    fun `cannot use onetime token to access other URL`()
+    {
+        val desiredUrl = "/touchstones/"
+        val otherUrl = "/touchstones/1/scenarios/"
+        val permissions = PermissionSet("*/can-login", "*/touchstones.read")
+
+        val bearerToken = TestUserHelper.setupTestUserAndGetToken(permissions)
+        val requestHelper = RequestHelper()
+        val oneTimeToken = requestHelper.getOneTimeToken(desiredUrl, bearerToken)
+        val response = RequestHelper().get("$otherUrl?access_token=$oneTimeToken")
+
+        JSONValidator().validateError(response.text, expectedErrorCode = "b")
     }
 }

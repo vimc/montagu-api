@@ -4,13 +4,13 @@ import org.pac4j.core.config.Config
 import org.pac4j.core.config.ConfigFactory
 import org.pac4j.core.context.HttpConstants
 import org.pac4j.core.profile.CommonProfile
-import org.pac4j.jwt.profile.JwtProfile
 import org.pac4j.sparkjava.SparkWebContext
 import org.vaccineimpact.api.app.context.DirectActionContext
 import org.vaccineimpact.api.app.errors.MissingRequiredPermissionError
 import org.vaccineimpact.api.app.repositories.RepositoryFactory
 import org.vaccineimpact.api.models.ErrorInfo
 import org.vaccineimpact.api.models.permissions.PermissionSet
+import org.vaccineimpact.api.models.permissions.ReifiedPermission
 import org.vaccineimpact.api.security.WebTokenHelper
 
 class TokenVerifyingConfigFactory(
@@ -39,15 +39,14 @@ class TokenVerifyingConfigFactory(
 
     fun allClients() = clients.joinToString { it::class.java.simpleName }
 
-    private fun extractPermissionsFromToken(commonProfile: CommonProfile): CommonProfile
+    private fun extractPermissionsFromToken(profile: CommonProfile): CommonProfile
     {
-        val profile = commonProfile as JwtProfile
         val permissions = PermissionSet((profile.getAttribute("permissions") as String)
                 .split(',')
                 .filter { it.isNotEmpty() }
         )
-        commonProfile.addAttribute(PERMISSIONS, permissions)
-        return commonProfile
+        profile.adapted().permissions = permissions
+        return profile
     }
 }
 
@@ -56,7 +55,19 @@ class TokenActionAdapter(wrappedClients: List<MontaguSecurityClientWrapper>, rep
 {
     private val unauthorizedResponse: List<ErrorInfo> = wrappedClients.map { it.authorizationError }
 
-    private fun forbiddenResponse(missingPermissions: Set<String>) = MissingRequiredPermissionError(missingPermissions).problems
+    private fun forbiddenResponse(missingPermissions: Set<ReifiedPermission>, mismatchedURL: String?): List<ErrorInfo>
+    {
+        val errors = mutableListOf<ErrorInfo>()
+        if (missingPermissions.any())
+        {
+            errors.addAll(MissingRequiredPermissionError(missingPermissions).problems)
+        }
+        if (mismatchedURL != null)
+        {
+            errors.add(ErrorInfo("forbidden", mismatchedURL))
+        }
+        return errors
+    }
 
     override fun adapt(code: Int, context: SparkWebContext): Any? = when (code)
     {
@@ -66,10 +77,8 @@ class TokenActionAdapter(wrappedClients: List<MontaguSecurityClientWrapper>, rep
         }
         HttpConstants.FORBIDDEN ->
         {
-            val profile = DirectActionContext(context).userProfile
-            val missingPermissions = profile!!.getAttributeOrDefault(MISSING_PERMISSIONS, mutableSetOf<String>())
-            val response = forbiddenResponse(missingPermissions).toList()
-            haltWithError(code, context, response)
+            val profile = DirectActionContext(context).userProfile!!.adapted()
+            haltWithError(code, context, forbiddenResponse(profile.missingPermissions, profile.mismatchedURL))
         }
         else -> super.adapt(code, context)
     }
