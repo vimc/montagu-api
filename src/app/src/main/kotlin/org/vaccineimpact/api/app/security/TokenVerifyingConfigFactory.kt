@@ -41,6 +41,7 @@ class TokenVerifyingConfigFactory(
 
     private fun extractPermissionsFromToken(profile: CommonProfile): CommonProfile
     {
+        // "permissions" will exists as an attribute because profile is a JwtProfile
         val permissions = PermissionSet((profile.getAttribute("permissions") as String)
                 .split(',')
                 .filter { it.isNotEmpty() }
