@@ -29,14 +29,15 @@ open class WebTokenHelper(keyPair: KeyPair,
         return generator.generate(claims(user))
     }
 
-    open fun generateOneTimeActionToken(action: String,
-                                        params: Map<String, String>,
-                                        queryString: String?,
-                                        lifeSpan: Duration,
-                                        username: String): String
+    open fun generateOldStyleOneTimeActionToken(action: String,
+                                                params: Map<String, String>,
+                                                queryString: String?,
+                                                lifeSpan: Duration,
+                                                username: String): String
     {
         return generator.generate(mapOf(
                 "iss" to issuer,
+                "token_type" to TokenType.LEGACY_ONETIME,
                 "sub" to oneTimeActionSubject,
                 "exp" to Date.from(Instant.now().plus(lifeSpan)),
                 "action" to action,
@@ -50,13 +51,15 @@ open class WebTokenHelper(keyPair: KeyPair,
 
     open fun generateNewStyleOnetimeActionToken(
             url: String,
+            username: String,
             permissions: String,
             roles: String
     ): String
     {
         return generator.generate(mapOf(
                 "iss" to issuer,
-                "sub" to oneTimeActionSubject,
+                "token_type" to TokenType.ONETIME,
+                "sub" to username,
                 "exp" to Date.from(Instant.now().plus(oneTimeLinkLifeSpan)),
                 "permissions" to permissions,
                 "roles" to roles,
@@ -71,6 +74,7 @@ open class WebTokenHelper(keyPair: KeyPair,
         return generator.generate(
                 mapOf("sub" to apiResponseSubject,
                         "iss" to issuer,
+                        "token_type" to TokenType.API_RESPONSE,
                         "result" to json))
     }
 
@@ -78,6 +82,7 @@ open class WebTokenHelper(keyPair: KeyPair,
     {
         return mapOf(
                 "iss" to issuer,
+                "token_type" to TokenType.BEARER,
                 "sub" to user.username,
                 "exp" to Date.from(Instant.now().plus(lifeSpan)),
                 "permissions" to user.permissions.joinToString(","),
@@ -90,13 +95,23 @@ open class WebTokenHelper(keyPair: KeyPair,
         val allowedShiny = user.permissions.contains(ReifiedPermission("reports.review", Scope.Global()))
         return mapOf(
                 "iss" to issuer,
+                "token_type" to TokenType.SHINY,
                 "sub" to user.username,
                 "exp" to Date.from(Instant.now().plus(lifeSpan)),
                 "allowed_shiny" to allowedShiny.toString()
         )
     }
 
-    open fun verify(token: String): Map<String, Any> = MontaguTokenAuthenticator(this).validateTokenAndGetClaims(token)
+    open fun verify(token: String, expectedType: TokenType,
+                    oneTimeTokenChecker: OneTimeTokenChecker): Map<String, Any>
+    {
+        val authenticator = when (expectedType)
+        {
+            TokenType.ONETIME -> OneTimeTokenAuthenticator(this, oneTimeTokenChecker)
+            else -> MontaguTokenAuthenticator(this, expectedType)
+        }
+        return authenticator.validateTokenAndGetClaims(token)
+    }
 
     private fun getNonce(): String
     {

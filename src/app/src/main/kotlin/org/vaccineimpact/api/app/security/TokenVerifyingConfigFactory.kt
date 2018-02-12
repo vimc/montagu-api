@@ -21,7 +21,7 @@ class TokenVerifyingConfigFactory(
 {
     private val wrappedClients: List<MontaguSecurityClientWrapper> = listOf(
             JWTHeaderClient.Wrapper(tokenHelper),
-            JWTParameterClient.Wrapper(tokenHelper, repositoryFactory)
+            JWTParameterClient.Wrapper(tokenHelper, JooqOneTimeTokenChecker(repositoryFactory))
     )
     private val clients = wrappedClients.map { it.client }
 
