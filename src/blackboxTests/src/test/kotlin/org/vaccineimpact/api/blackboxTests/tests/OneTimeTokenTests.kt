@@ -46,6 +46,9 @@ class OneTimeTokenTests : DatabaseTest()
         val oneTimeToken = requestHelper.getOneTimeToken(desiredUrl, bearerToken)
         val response = RequestHelper().get("$otherUrl?access_token=$oneTimeToken")
 
-        JSONValidator().validateError(response.text, expectedErrorCode = "b")
+        JSONValidator().validateError(response.text,
+                expectedErrorCode = "forbidden",
+                expectedErrorText = "This token is issued for /v1/touchstones/ but the current request is for /v1/touchstones/1/scenarios/"
+        )
     }
 }
