@@ -1,94 +1,25 @@
 package org.vaccineimpact.api.tests.serialization
 
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.vaccineimpact.api.models.ModelRun
+import org.vaccineimpact.api.models.helpers.FlexibleColumns
 import org.vaccineimpact.api.serialization.DataTableDeserializer
 import org.vaccineimpact.api.serialization.MontaguSerializer
-import org.vaccineimpact.api.models.TouchstoneStatus
-import org.vaccineimpact.api.models.helpers.FlexibleColumns
-import org.vaccineimpact.api.serialization.DataTable
 import org.vaccineimpact.api.serialization.validation.ValidationException
 import org.vaccineimpact.api.test_helpers.MontaguTests
-import org.vaccineimpact.api.test_helpers.serializeToStreamAndGetAsString
 import java.math.BigDecimal
 
-class DataTableTests : MontaguTests()
+class DataTableDeserializerTests : MontaguTests()
 {
     data class ABC(val a: String, val b: String, val c: String)
     data class MixedTypes(val text: String?, val int: Int?, val dec: BigDecimal?)
     data class SomeRequiredColumns(val text: String?, val int: Int)
-    data class WithEnums(val text: String, val enum: TouchstoneStatus)
     @FlexibleColumns
     data class Flexible(val a: Int, val b: String, val extra: Map<String, Int>)
 
     @FlexibleColumns
     data class FlexibleWithStrings(val a: Int, val b: String, val extra: Map<String, String>)
-
-    @Test
-    fun `headers are written in order of constructor`()
-    {
-        val table = DataTable.new<ABC>(emptySequence())
-        assertThat(serialize(table)).isEqualTo("""a,b,c""")
-    }
-
-    @Test
-    fun `data is written out line by line`()
-    {
-        val table = DataTable.new(sequenceOf(
-                ABC("g", "h", "i"),
-                ABC("x", "y", "z")
-        ))
-        assertThat(serialize(table)).isEqualTo("""a,b,c
-g,h,i
-x,y,z""")
-    }
-
-    @Test
-    fun `special characters are escaped`()
-    {
-        val table = DataTable.new(sequenceOf(
-                ABC("g", "h", "i"),
-                ABC("x", "y", "z"),
-                ABC("with, commas", """with "quotes" and no commas""", """both "quotes" and ,commas,""")
-        ))
-        assertThat(serialize(table)).isEqualTo("""a,b,c
-g,h,i
-x,y,z
-"with, commas","with ""quotes"" and no commas","both ""quotes"" and ,commas,"""")
-    }
-
-    @Test
-    fun `mixed types are written out`()
-    {
-        val table = DataTable.new(sequenceOf(
-                MixedTypes("text", 123, BigDecimal("3.1415"))
-        ))
-        assertThat(serialize(table)).isEqualTo("""text,int,dec
-text,123,3.1415""")
-    }
-
-    @Test
-    fun `null is converted to NA`()
-    {
-        val table = DataTable.new(sequenceOf(
-                MixedTypes(null, null, null)
-        ))
-        assertThat(serialize(table)).isEqualTo("""text,int,dec
-<NA>,<NA>,<NA>""")
-    }
-
-    @Test
-    fun `enum is converted to lowercase with hyphens`()
-    {
-        val table = DataTable.new(sequenceOf(
-                WithEnums("free text", TouchstoneStatus.IN_PREPARATION)
-        ))
-        assertThat(serialize(table)).isEqualTo("""text,enum
-free text,in-preparation""")
-    }
-
 
     @Test
     fun `can deserialize CSV`()
@@ -98,7 +29,7 @@ free text,in-preparation""")
             "joe",1,6.53
             "bob",2,2.0"""
         val rows = DataTableDeserializer.deserialize(csv, MixedTypes::class, MontaguSerializer.instance).toList()
-        assertThat(rows).containsExactlyElementsOf(listOf(
+        Assertions.assertThat(rows).containsExactlyElementsOf(listOf(
                 MixedTypes("joe", 1, BigDecimal.valueOf(6.53)),
                 MixedTypes("bob", 2, BigDecimal.valueOf(2.0))
         ))
@@ -108,7 +39,7 @@ free text,in-preparation""")
     fun `empty CSV data causes an exception`()
     {
         val csv = ""
-        assertThatThrownBy {
+        Assertions.assertThatThrownBy {
             DataTableDeserializer.deserialize(csv, MixedTypes::class, MontaguSerializer.instance).toList()
         }.matches {
             val error = (it as ValidationException).errors.single()
@@ -124,7 +55,7 @@ free text,in-preparation""")
             "joe",1,6.53
             "bob",2,2.0"""
         val rows = DataTableDeserializer.deserialize(csv, MixedTypes::class, MontaguSerializer.instance).toList()
-        assertThat(rows).containsExactlyElementsOf(listOf(
+        Assertions.assertThat(rows).containsExactlyElementsOf(listOf(
                 MixedTypes("joe", 1, BigDecimal.valueOf(6.53)),
                 MixedTypes("bob", 2, BigDecimal.valueOf(2.0))
         ))
@@ -197,7 +128,7 @@ free text,in-preparation""")
             1,"joe",1,2,3
             2,"bob",4,5,6"""
         val rows = DataTableDeserializer.deserialize(csv, Flexible::class, MontaguSerializer.instance).toList()
-        assertThat(rows).containsExactlyElementsOf(listOf(
+        Assertions.assertThat(rows).containsExactlyElementsOf(listOf(
                 Flexible(1, "joe", mapOf("x" to 1, "y" to 2, "z" to 3)),
                 Flexible(2, "bob", mapOf("x" to 4, "y" to 5, "z" to 6))
         ))
@@ -274,23 +205,19 @@ free text,in-preparation""")
         val result =
                 DataTableDeserializer.deserialize(csv, FlexibleWithStrings::class, MontaguSerializer.instance).toList()
 
-        assertThat(result.last().extra["y"]).isEmpty()
+        Assertions.assertThat(result.last().extra["y"]).isEmpty()
     }
-
-    private fun serialize(table: DataTable<*>) = serializeToStreamAndGetAsString {
-        table.serialize(it, MontaguSerializer.instance)
-    }.trim()
 
     private fun checkValidationError(code: String, message: String? = null, body: () -> Any?)
     {
-        assertThatThrownBy { body() }
+        Assertions.assertThatThrownBy { body() }
                 .isInstanceOf(ValidationException::class.java)
                 .matches {
                     val error = it as ValidationException
-                    assertThat(error.errors.first().code).isEqualTo(code)
+                    Assertions.assertThat(error.errors.first().code).isEqualTo(code)
                     if (message != null)
                     {
-                        assertThat(error.errors.first().message).isEqualTo(message)
+                        Assertions.assertThat(error.errors.first().message).isEqualTo(message)
                     }
                     true
                 }
