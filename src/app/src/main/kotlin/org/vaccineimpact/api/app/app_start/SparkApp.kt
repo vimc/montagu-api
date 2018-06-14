@@ -1,5 +1,8 @@
 package org.vaccineimpact.api.app.app_start
 
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.util.Jetty
+import org.eclipse.jetty.util.thread.ThreadPool
 import org.slf4j.LoggerFactory
 import org.vaccineimpact.api.app.ErrorHandler
 import org.vaccineimpact.api.app.NotFoundHandler
@@ -11,7 +14,9 @@ import org.vaccineimpact.api.db.Config
 import org.vaccineimpact.api.security.KeyHelper
 import org.vaccineimpact.api.security.WebTokenHelper
 import org.vaccineimpact.api.serialization.MontaguSerializer
-import java.io.File
+import spark.embeddedserver.EmbeddedServers
+import spark.embeddedserver.jetty.EmbeddedJettyFactory
+import spark.embeddedserver.jetty.JettyServerFactory
 import java.net.BindException
 import java.net.ServerSocket
 import kotlin.system.exitProcess
@@ -26,6 +31,7 @@ class MontaguApi
 
     fun run(repositoryFactory: RepositoryFactory)
     {
+        EmbeddedServers.add(EmbeddedServers.defaultIdentifier(), EmbeddedJettyFactory()
         setupPort()
 
         spk.redirect.get("/", urlBase)
