@@ -49,7 +49,7 @@ class WebTokenHelperTests : MontaguTests()
 
     private fun createHelper(serializer: Serializer = mock<Serializer>())
     {
-        sut = WebTokenHelper(KeyHelper.keyPair, serializer)
+        sut = WebTokenHelper(KeyHelper.keyPair, serializer = serializer)
     }
 
     @Test

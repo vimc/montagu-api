@@ -13,14 +13,14 @@ class JooqTokenRepository(dsl: DSLContext) : JooqRepository(dsl), TokenRepositor
     override fun storeToken(token: String)
     {
         dsl.newRecord(ONETIME_TOKEN).apply {
-            this.token = inflate(token)
+            this.token = token
         }.store()
     }
 
     override fun validateOneTimeToken(token: String): Boolean
     {
         val deletedCount = dsl.deleteFrom(ONETIME_TOKEN)
-                .where(ONETIME_TOKEN.TOKEN.eq(inflate(token)))
+                .where(ONETIME_TOKEN.TOKEN.eq(token))
                 .execute()
         return deletedCount == 1
     }
