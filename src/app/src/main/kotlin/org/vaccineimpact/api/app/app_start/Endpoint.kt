@@ -11,6 +11,7 @@ import org.vaccineimpact.api.app.security.TokenIssuingConfigFactory
 import org.vaccineimpact.api.app.security.TokenVerifyingConfigFactory
 import org.vaccineimpact.api.db.Config
 import org.vaccineimpact.api.models.helpers.ContentTypes
+import org.vaccineimpact.api.security.CompressedWebTokenHelper
 import org.vaccineimpact.api.security.WebTokenHelper
 import spark.Spark
 import spark.route.HttpMethod
@@ -36,7 +37,7 @@ data class Endpoint(
         }
     }
 
-    override fun additionalSetup(url: String, webTokenHelper: WebTokenHelper, repositoryFactory: RepositoryFactory)
+    override fun additionalSetup(url: String, webTokenHelper: CompressedWebTokenHelper, repositoryFactory: RepositoryFactory)
     {
         if (requiredPermissions.any())
         {
@@ -50,7 +51,7 @@ data class Endpoint(
         Spark.after(url, contentType, DefaultHeadersFilter("$contentType; charset=utf-8", method))
     }
 
-    private fun addSecurityFilter(url: String, webTokenHelper: WebTokenHelper, repositoryFactory: RepositoryFactory)
+    private fun addSecurityFilter(url: String, webTokenHelper: CompressedWebTokenHelper, repositoryFactory: RepositoryFactory)
     {
         if (Config.authEnabled)
         {

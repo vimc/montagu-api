@@ -13,17 +13,14 @@ import org.vaccineimpact.api.app.security.OneTimeTokenGenerator
 import org.vaccineimpact.api.models.Result
 import org.vaccineimpact.api.models.ResultStatus
 import org.vaccineimpact.api.models.helpers.OneTimeAction
-import org.vaccineimpact.api.security.KeyHelper
-import org.vaccineimpact.api.security.NoopOneTimeTokenChecker
-import org.vaccineimpact.api.security.TokenType
-import org.vaccineimpact.api.security.WebTokenHelper
+import org.vaccineimpact.api.security.*
 
 class OneTimeLinkController(
         context: ActionContext,
         private val tokenRepository: TokenRepository,
         private val oneTimeTokenGenerator: OneTimeTokenGenerator,
         private val onetimeLinkResolver: OnetimeLinkResolver,
-        private val tokenHelper: WebTokenHelper = WebTokenHelper(KeyHelper.keyPair),
+        private val tokenHelper: WebTokenHelper = CompressedWebTokenHelper(KeyHelper.keyPair),
         private val errorHandler: ErrorHandler = ErrorHandler(),
         private val redirectValidator: RedirectValidator = MontaguRedirectValidator()
 ) : Controller(context)

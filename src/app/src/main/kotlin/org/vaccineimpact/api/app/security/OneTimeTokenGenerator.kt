@@ -6,6 +6,7 @@ import org.vaccineimpact.api.app.RedirectValidator
 import org.vaccineimpact.api.app.context.ActionContext
 import org.vaccineimpact.api.app.repositories.TokenRepository
 import org.vaccineimpact.api.models.helpers.OneTimeAction
+import org.vaccineimpact.api.security.CompressedWebTokenHelper
 import org.vaccineimpact.api.security.KeyHelper
 import org.vaccineimpact.api.security.WebTokenHelper
 import org.vaccineimpact.api.serialization.MontaguSerializer
@@ -14,7 +15,7 @@ import java.time.Duration
 
 open class OneTimeTokenGenerator(
         private val tokenRepository: TokenRepository,
-        private val tokenHelper: WebTokenHelper = WebTokenHelper(KeyHelper.keyPair),
+        private val tokenHelper: WebTokenHelper = CompressedWebTokenHelper(KeyHelper.keyPair),
         private val serializer: Serializer = MontaguSerializer.instance,
         private val redirectValidator: RedirectValidator = MontaguRedirectValidator())
 {

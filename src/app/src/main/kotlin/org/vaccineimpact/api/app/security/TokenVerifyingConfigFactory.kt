@@ -11,17 +11,18 @@ import org.vaccineimpact.api.app.repositories.RepositoryFactory
 import org.vaccineimpact.api.models.ErrorInfo
 import org.vaccineimpact.api.models.permissions.PermissionSet
 import org.vaccineimpact.api.models.permissions.ReifiedPermission
+import org.vaccineimpact.api.security.CompressedWebTokenHelper
 import org.vaccineimpact.api.security.WebTokenHelper
 
 class TokenVerifyingConfigFactory(
-        tokenHelper: WebTokenHelper,
+        tokenHelper: CompressedWebTokenHelper,
         private val requiredPermissions: Set<PermissionRequirement>,
         private val repositoryFactory: RepositoryFactory
 ) : ConfigFactory
 {
     private val wrappedClients: List<MontaguSecurityClientWrapper> = listOf(
-            JWTHeaderClient.Wrapper(tokenHelper),
-            JWTParameterClient.Wrapper(tokenHelper, JooqOneTimeTokenChecker(repositoryFactory))
+            JWTCompressedHeaderClient.Wrapper(tokenHelper),
+            JWTCompressedParameterClient.Wrapper(tokenHelper, JooqOneTimeTokenChecker(repositoryFactory))
     )
     private val clients = wrappedClients.map { it.client }
 
