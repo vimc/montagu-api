@@ -3,6 +3,7 @@ package org.vaccineimpact.api.app.app_start
 import org.vaccineimpact.api.app.context.ActionContext
 import org.vaccineimpact.api.app.repositories.RepositoryFactory
 import org.vaccineimpact.api.app.security.PermissionRequirement
+import org.vaccineimpact.api.security.CompressedWebTokenHelper
 import org.vaccineimpact.api.security.WebTokenHelper
 import spark.route.HttpMethod
 import kotlin.reflect.KClass
@@ -20,5 +21,5 @@ interface EndpointDefinition
     val requiredPermissions: List<PermissionRequirement>
     val basicAuth: Boolean
 
-    fun additionalSetup(url: String, webTokenHelper: WebTokenHelper, repositoryFactory: RepositoryFactory)
+    fun additionalSetup(url: String, webTokenHelper: CompressedWebTokenHelper, repositoryFactory: RepositoryFactory)
 }

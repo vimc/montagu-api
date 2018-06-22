@@ -13,13 +13,14 @@ import org.vaccineimpact.api.db.ConfigWrapper
 import org.vaccineimpact.api.models.AuthenticationResponse
 import org.vaccineimpact.api.models.FailedAuthentication
 import org.vaccineimpact.api.models.SuccessfulAuthentication
+import org.vaccineimpact.api.security.CompressedWebTokenHelper
 import org.vaccineimpact.api.security.KeyHelper
 import org.vaccineimpact.api.security.WebTokenHelper
 
 class AuthenticationController(context: ActionContext,
                                private val userRepository: UserRepository,
                                private val htmlFormHelpers: FormHelpers = HTMLFormHelpers(),
-                               private val tokenHelper: WebTokenHelper = WebTokenHelper(KeyHelper.keyPair),
+                               private val tokenHelper: WebTokenHelper = CompressedWebTokenHelper(KeyHelper.keyPair),
                                private val config: ConfigWrapper = Config)
     : Controller(context)
 {

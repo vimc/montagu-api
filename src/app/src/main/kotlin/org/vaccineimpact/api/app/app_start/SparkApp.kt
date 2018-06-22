@@ -8,6 +8,7 @@ import org.vaccineimpact.api.app.addTrailingSlashes
 import org.vaccineimpact.api.app.app_start.route_config.MontaguRouteConfig
 import org.vaccineimpact.api.app.repositories.RepositoryFactory
 import org.vaccineimpact.api.db.Config
+import org.vaccineimpact.api.security.CompressedWebTokenHelper
 import org.vaccineimpact.api.security.KeyHelper
 import org.vaccineimpact.api.security.WebTokenHelper
 import org.vaccineimpact.api.serialization.MontaguSerializer
@@ -20,7 +21,7 @@ import spark.Spark as spk
 class MontaguApi
 {
     private val urlBase = "/v1"
-    private val tokenHelper = WebTokenHelper(KeyHelper.keyPair)
+    private val tokenHelper = CompressedWebTokenHelper(KeyHelper.keyPair)
 
     private val logger = LoggerFactory.getLogger(MontaguApi::class.java)
 

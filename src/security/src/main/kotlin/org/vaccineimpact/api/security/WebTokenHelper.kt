@@ -3,6 +3,7 @@ package org.vaccineimpact.api.security
 import org.pac4j.core.profile.CommonProfile
 import org.pac4j.jwt.config.signature.AbstractSignatureConfiguration
 import org.pac4j.jwt.config.signature.RSASignatureConfiguration
+import org.pac4j.jwt.profile.JwtGenerator
 import org.vaccineimpact.api.db.Config
 import org.vaccineimpact.api.models.Result
 import org.vaccineimpact.api.models.Scope
@@ -15,10 +16,15 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
+class CompressedWebTokenHelper(keyPair: KeyPair,
+                               signatureConfiguration: AbstractSignatureConfiguration = RSASignatureConfiguration(keyPair),
+                               val serializer: Serializer = MontaguSerializer.instance)
+    : WebTokenHelper(keyPair, signatureConfiguration, CompressedJwtGenerator<CommonProfile>(signatureConfiguration))
+
 open class WebTokenHelper(
         keyPair: KeyPair,
         val signatureConfiguration: AbstractSignatureConfiguration = RSASignatureConfiguration(keyPair),
-        val generator: TokenGenerator = CompressedJwtGenerator<CommonProfile>(signatureConfiguration),
+        val generator: TokenGenerator = JwtGeneratorWrapper<CommonProfile>(signatureConfiguration),
         private val serializer: Serializer = MontaguSerializer.instance)
 {
     open val defaultLifespan: Duration = Duration.ofSeconds(Config["token.lifespan"].toLong())

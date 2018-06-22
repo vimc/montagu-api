@@ -8,13 +8,14 @@ import org.vaccineimpact.api.app.controllers.*
 import org.vaccineimpact.api.app.repositories.Repositories
 import org.vaccineimpact.api.app.security.OneTimeTokenGenerator
 import org.vaccineimpact.api.models.helpers.OneTimeAction
+import org.vaccineimpact.api.security.CompressedWebTokenHelper
 import org.vaccineimpact.api.security.KeyHelper
 import org.vaccineimpact.api.security.WebTokenHelper
 import org.vaccineimpact.api.serialization.Deserializer
 
 
 open class OnetimeLinkResolver(private val repositories: Repositories,
-                               private val webTokenHelper: WebTokenHelper = WebTokenHelper(KeyHelper.keyPair))
+                               private val webTokenHelper: WebTokenHelper = CompressedWebTokenHelper(KeyHelper.keyPair))
 {
 
     @Throws(Exception::class)

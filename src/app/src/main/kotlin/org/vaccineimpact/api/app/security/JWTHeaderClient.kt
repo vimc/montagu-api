@@ -5,13 +5,10 @@ import org.pac4j.core.credentials.TokenCredentials
 import org.pac4j.core.credentials.extractor.HeaderExtractor
 import org.pac4j.http.client.direct.HeaderClient
 import org.vaccineimpact.api.models.ErrorInfo
-import org.vaccineimpact.api.security.MontaguTokenAuthenticator
-import org.vaccineimpact.api.security.TokenType
-import org.vaccineimpact.api.security.WebTokenHelper
-import org.vaccineimpact.api.security.inflate
+import org.vaccineimpact.api.security.*
 
 // This client receives the token as TokenCredentials and stores the result as JwtProfile
-class JWTHeaderClient(helper: WebTokenHelper)
+class JWTCompressedHeaderClient(helper: CompressedWebTokenHelper)
     : HeaderClient("Authorization", "Bearer ", MontaguTokenAuthenticator(helper, TokenType.BEARER))
 {
     init
@@ -19,9 +16,9 @@ class JWTHeaderClient(helper: WebTokenHelper)
         credentialsExtractor = CompressedHeaderExtractor(headerName, prefixHeader, name)
     }
 
-    class Wrapper(helper: WebTokenHelper) : MontaguSecurityClientWrapper
+    class Wrapper(helper: CompressedWebTokenHelper) : MontaguSecurityClientWrapper
     {
-        override val client = JWTHeaderClient(helper)
+        override val client = JWTCompressedHeaderClient(helper)
         override val authorizationError = ErrorInfo(
                 "bearer-token-invalid",
                 "Bearer token not supplied in Authorization header, or bearer token was invalid"

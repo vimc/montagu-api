@@ -9,6 +9,7 @@ import org.vaccineimpact.api.app.errors.UnsupportedValueException
 import org.vaccineimpact.api.app.repositories.Repositories
 import org.vaccineimpact.api.app.repositories.RepositoryFactory
 import org.vaccineimpact.api.models.AuthenticationResponse
+import org.vaccineimpact.api.security.CompressedWebTokenHelper
 import org.vaccineimpact.api.security.WebTokenHelper
 import org.vaccineimpact.api.serialization.Serializer
 import org.vaccineimpact.api.serialization.StreamSerializable
@@ -19,7 +20,7 @@ import java.lang.reflect.InvocationTargetException
 
 class Router(val config: RouteConfig,
              val serializer: Serializer,
-             val webTokenHelper: WebTokenHelper,
+             val webTokenHelper: CompressedWebTokenHelper,
              val repositoryFactory: RepositoryFactory)
 {
     private val logger = LoggerFactory.getLogger(Router::class.java)

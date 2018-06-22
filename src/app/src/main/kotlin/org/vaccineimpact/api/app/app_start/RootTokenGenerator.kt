@@ -1,13 +1,10 @@
 package org.vaccineimpact.api.app.app_start
 
 import org.vaccineimpact.api.models.permissions.ReifiedPermission
-import org.vaccineimpact.api.security.InternalUser
-import org.vaccineimpact.api.security.KeyHelper
-import org.vaccineimpact.api.security.UserProperties
-import org.vaccineimpact.api.security.WebTokenHelper
+import org.vaccineimpact.api.security.*
 import java.time.Duration
 
-class RootTokenGenerator(val helper: WebTokenHelper = WebTokenHelper(KeyHelper.loadKeyPair()))
+class RootTokenGenerator(val helper: WebTokenHelper = CompressedWebTokenHelper(KeyHelper.loadKeyPair()))
 {
     fun generate(permissions: List<String>): String
     {
