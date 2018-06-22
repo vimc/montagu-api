@@ -4,6 +4,7 @@ import org.jooq.DSLContext
 import org.vaccineimpact.api.app.repositories.TokenRepository
 import org.vaccineimpact.api.db.Tables.ONETIME_TOKEN
 import org.vaccineimpact.api.models.HasKey
+import org.vaccineimpact.api.security.inflate
 
 class JooqTokenRepository(dsl: DSLContext) : JooqRepository(dsl), TokenRepository
 {

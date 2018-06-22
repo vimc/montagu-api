@@ -13,10 +13,7 @@ import org.vaccineimpact.api.app.security.OneTimeTokenGenerator
 import org.vaccineimpact.api.models.Result
 import org.vaccineimpact.api.models.ResultStatus
 import org.vaccineimpact.api.models.helpers.OneTimeAction
-import org.vaccineimpact.api.security.KeyHelper
-import org.vaccineimpact.api.security.NoopOneTimeTokenChecker
-import org.vaccineimpact.api.security.TokenType
-import org.vaccineimpact.api.security.WebTokenHelper
+import org.vaccineimpact.api.security.*
 
 class OneTimeLinkController(
         context: ActionContext,
@@ -40,7 +37,8 @@ class OneTimeLinkController(
 
     fun onetimeLink(): Any
     {
-        val token = context.params(":token")
+        val compressedToken = context.params(":token")
+        val token = inflate(compressedToken)
         val claims = verifyOldStyleToken(token, tokenRepository)
         val link = OneTimeLink.parseClaims(claims)
         val redirectUrl = link.queryParams["redirectUrl"]
@@ -105,7 +103,7 @@ class OneTimeLinkController(
     private fun redirectWithResult(context: ActionContext, result: Result, redirectUrl: String,
                                    exception: Exception? = null)
     {
-        val encodedResult = tokenHelper.encodeResult(result)
+        val encodedResult = deflate(tokenHelper.encodeResult(result))
         context.request.consumeRemainder()
         // it is recommended to keep urls under 2000 characters
         // https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers/417184#417184

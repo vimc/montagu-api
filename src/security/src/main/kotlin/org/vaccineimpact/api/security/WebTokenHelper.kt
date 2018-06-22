@@ -1,12 +1,13 @@
 package org.vaccineimpact.api.security
 
 import org.pac4j.core.profile.CommonProfile
+import org.pac4j.jwt.config.signature.AbstractSignatureConfiguration
 import org.pac4j.jwt.config.signature.RSASignatureConfiguration
-import org.pac4j.jwt.profile.JwtGenerator
 import org.vaccineimpact.api.db.Config
 import org.vaccineimpact.api.models.Result
 import org.vaccineimpact.api.models.Scope
 import org.vaccineimpact.api.models.permissions.ReifiedPermission
+import org.pac4j.jwt.profile.JwtGenerator
 import org.vaccineimpact.api.serialization.MontaguSerializer
 import org.vaccineimpact.api.serialization.Serializer
 import java.security.KeyPair
@@ -15,13 +16,14 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
-open class WebTokenHelper(keyPair: KeyPair,
-                          private val serializer: Serializer = MontaguSerializer.instance)
+open class WebTokenHelper(
+        keyPair: KeyPair,
+        val signatureConfiguration: AbstractSignatureConfiguration = RSASignatureConfiguration(keyPair),
+        val generator: JwtGenerator<CommonProfile> = JwtGenerator<CommonProfile>(signatureConfiguration),
+        private val serializer: Serializer = MontaguSerializer.instance)
 {
     open val defaultLifespan: Duration = Duration.ofSeconds(Config["token.lifespan"].toLong())
     val issuer = Config["token.issuer"]
-    val signatureConfiguration = RSASignatureConfiguration(keyPair)
-    val generator = JwtGenerator<CommonProfile>(signatureConfiguration)
     private val random = SecureRandom()
 
     open fun generateToken(user: InternalUser, lifeSpan: Duration = defaultLifespan): String
