@@ -16,7 +16,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
-class CompressedWebTokenHelper(keyPair: KeyPair,
+open class CompressedWebTokenHelper(keyPair: KeyPair,
                                signatureConfiguration: AbstractSignatureConfiguration = RSASignatureConfiguration(keyPair),
                                val serializer: Serializer = MontaguSerializer.instance)
     : WebTokenHelper(keyPair, signatureConfiguration, CompressedJwtGenerator<CommonProfile>(signatureConfiguration))
