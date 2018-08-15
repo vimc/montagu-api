@@ -1,15 +1,19 @@
 package org.vaccineimpact.api.tests.controllers
 
 import com.nhaarman.mockito_kotlin.*
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.pac4j.core.profile.CommonProfile
 import org.vaccineimpact.api.app.context.ActionContext
 import org.vaccineimpact.api.app.controllers.AuthenticationController
+import org.vaccineimpact.api.app.logic.UserLogic
 import org.vaccineimpact.api.app.repositories.UserRepository
 import org.vaccineimpact.api.app.requests.FormHelpers
 import org.vaccineimpact.api.app.requests.HTMLForm
 import org.vaccineimpact.api.app.security.internalUser
 import org.vaccineimpact.api.db.ConfigWrapper
+import org.vaccineimpact.api.models.FailedAuthentication
+import org.vaccineimpact.api.models.SuccessfulAuthentication
 import org.vaccineimpact.api.security.InternalUser
 import org.vaccineimpact.api.security.UserProperties
 import org.vaccineimpact.api.security.WebTokenHelper
@@ -20,13 +24,15 @@ import java.time.Duration
 class AuthenticationControllerTests : MontaguTests()
 {
     private val fakeUser = InternalUser(UserProperties("testusername", "", "", "", null),
-        listOf(),
-        listOf())
+            listOf(),
+            listOf())
 
     @Test
-    fun `successful authentication updates last logged in timestamp`()
+    fun `successful authentication returns compressed token and issues cookie`()
     {
-        val fakeUserRepo = mock<UserRepository>()
+        val fakeUserLogic = mock<UserLogic> {
+            on { logInAndGetToken(any()) } doReturn "TOKEN"
+        }
 
         val fakeProfile = CommonProfile()
         fakeProfile.internalUser = fakeUser
@@ -42,91 +48,38 @@ class AuthenticationControllerTests : MontaguTests()
         }
 
         val fakeWebTokenHelper = mock<WebTokenHelper> {
-            on { it.generateToken(eq(fakeUser), any()) } doReturn "token"
             on { it.defaultLifespan } doReturn Duration.ofHours(1)
         }
 
-        val sut = AuthenticationController(fakeContext, fakeUserRepo,
+        val sut = AuthenticationController(fakeContext, fakeUserLogic,
                 fakeFormHelpers, fakeWebTokenHelper)
 
-        sut.authenticate()
-        verify(fakeUserRepo).updateLastLoggedIn("testusername")
+        val expectedToken = "TOKEN".deflated()
+        assertThat(sut.authenticate()).isEqualTo(SuccessfulAuthentication(expectedToken, Duration.ofHours(1)))
+        verify(fakeUserLogic).logInAndGetToken(fakeUser)
+        verify(fakeContext).setCookie(eq(expectedToken), any())
     }
 
     @Test
-    fun `unsuccessful authentication does not update last logged in timestamp`()
+    fun `unsuccessful authentication returns problem`()
     {
-        val fakeUserRepo = mock<UserRepository>()
+        val fakeUserLogic = mock<UserLogic>()
 
         val fakeContext = mock<ActionContext>()
-        val fakeFormHelpers = mock<FormHelpers>() {
+        val fakeFormHelpers = mock<FormHelpers> {
             on {
                 it.checkForm(fakeContext, mapOf("grant_type" to "client_credentials"))
-            } doReturn (HTMLForm.InvalidForm(""))
+            } doReturn (HTMLForm.InvalidForm("problem"))
         }
 
         val fakeWebTokenHelper = mock<WebTokenHelper>()
 
-        val sut = AuthenticationController(fakeContext, fakeUserRepo,
+        val sut = AuthenticationController(fakeContext, fakeUserLogic,
                 fakeFormHelpers, fakeWebTokenHelper)
 
-        sut.authenticate()
-        verify(fakeUserRepo, never()).updateLastLoggedIn(any())
-    }
-
-
-    @Test
-    fun `cookie is Secure if allowLocalhost is false`()
-    {
-        val fakeContext = mock<ActionContext>(){
-            on { it.username } doReturn "username"
-        }
-
-        val fakeUserRepo = mock<UserRepository>(){
-            on { it.getUserByUsername("username")} doReturn fakeUser
-        }
-
-        val fakeWebTokenHelper = mock<WebTokenHelper> (){
-            on { it.defaultLifespan } doReturn Duration.ofHours(1)
-            on {it.generateShinyToken(fakeUser)} doReturn "token"
-        }
-
-        val config = mock<ConfigWrapper>(){
-            on { it.getBool("allow.localhost")} doReturn false
-        }
-
-        val sut = AuthenticationController(fakeContext, fakeUserRepo,
-                mock(), fakeWebTokenHelper, config)
-
-        sut.setShinyCookie()
-        verify(fakeContext).addResponseHeader("Set-Cookie", "jwt_token=token; Path=/; Secure; HttpOnly; SameSite=Lax")
-    }
-
-    @Test
-    fun `cookie is not Secure if allowLocalhost is true`()
-    {
-        val fakeContext = mock<ActionContext> {
-            on { it.username } doReturn "username"
-        }
-
-        val fakeUserRepo = mock<UserRepository> {
-            on { it.getUserByUsername("username")} doReturn fakeUser
-        }
-
-        val fakeWebTokenHelper = mock<WebTokenHelper> {
-            on { it.defaultLifespan } doReturn Duration.ofHours(1)
-            on {it.generateShinyToken(fakeUser)} doReturn "token"
-        }
-
-        val config = mock<ConfigWrapper> {
-            on { it.getBool("allow.localhost")} doReturn true
-        }
-
-        val sut = AuthenticationController(fakeContext, fakeUserRepo,
-                mock(), fakeWebTokenHelper, config)
-
-        sut.setShinyCookie()
-        verify(fakeContext).addResponseHeader("Set-Cookie", "jwt_token=token; Path=/; HttpOnly; SameSite=Lax")
+        assertThat(sut.authenticate()).isEqualTo(FailedAuthentication("problem"))
+        verify(fakeUserLogic, never()).logInAndGetToken(any())
+        verify(fakeContext, never()).setCookie(any(), any())
     }
 
 }

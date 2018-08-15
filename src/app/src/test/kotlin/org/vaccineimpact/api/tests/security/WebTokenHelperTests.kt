@@ -11,6 +11,7 @@ import org.vaccineimpact.api.models.ErrorInfo
 import org.vaccineimpact.api.models.Result
 import org.vaccineimpact.api.models.ResultStatus
 import org.vaccineimpact.api.models.Scope
+import org.vaccineimpact.api.models.permissions.PermissionSet
 import org.vaccineimpact.api.models.permissions.ReifiedPermission
 import org.vaccineimpact.api.models.permissions.ReifiedRole
 import org.vaccineimpact.api.security.*
@@ -78,29 +79,17 @@ class WebTokenHelperTests : MontaguTests()
     @Test
     fun `can generate shiny token for non report reviewer`()
     {
-        val token = sut.generateShinyToken(InternalUser(properties, roles, permissions))
-        val claims = sut.verify(token.deflated(), TokenType.SHINY, mock())
-
-        assertThat(claims["iss"]).isEqualTo("vaccineimpact.org")
-        assertThat(claims["token_type"]).isEqualTo("SHINY")
-        assertThat(claims["sub"]).isEqualTo("test.user")
-        assertThat(claims["exp"]).isInstanceOf(Date::class.java)
+        val token = sut.generateToken(InternalUser(properties, roles, permissions))
+        val claims = sut.verify(token.deflated(), TokenType.BEARER, mock())
         assertThat(claims["allowed_shiny"]).isEqualTo("false")
     }
 
     @Test
     fun `can generate shiny token for report reviewer`()
     {
-        val permissions = listOf(
-                ReifiedPermission("reports.review", Scope.Global())
-        )
-        val token = sut.generateShinyToken(InternalUser(properties, roles, permissions))
-        val claims = sut.verify(token.deflated(), TokenType.SHINY, mock())
-
-        assertThat(claims["iss"]).isEqualTo("vaccineimpact.org")
-        assertThat(claims["token_type"]).isEqualTo("SHINY")
-        assertThat(claims["sub"]).isEqualTo("test.user")
-        assertThat(claims["exp"]).isInstanceOf(Date::class.java)
+        val permissions = PermissionSet("*/reports.review").toList()
+        val token = sut.generateToken(InternalUser(properties, roles, permissions))
+        val claims = sut.verify(token.deflated(), TokenType.BEARER, mock())
         assertThat(claims["allowed_shiny"]).isEqualTo("true")
     }
 

@@ -81,24 +81,14 @@ open class WebTokenHelper(
 
     fun claims(user: InternalUser, lifeSpan: Duration = defaultLifespan): Map<String, Any>
     {
+        val allowedShiny = user.permissions.contains(ReifiedPermission("reports.review", Scope.Global()))
         return mapOf(
                 "iss" to issuer,
                 "token_type" to TokenType.BEARER,
                 "sub" to user.username,
                 "exp" to Date.from(Instant.now().plus(lifeSpan)),
                 "permissions" to user.permissions.joinToString(","),
-                "roles" to user.roles.joinToString(",")
-        )
-    }
-
-    private fun shinyClaims(user: InternalUser): Map<String, Any>
-    {
-        val allowedShiny = user.permissions.contains(ReifiedPermission("reports.review", Scope.Global()))
-        return mapOf(
-                "iss" to issuer,
-                "token_type" to TokenType.SHINY,
-                "sub" to user.username,
-                "exp" to Date.from(Instant.now().plus(defaultLifespan)),
+                "roles" to user.roles.joinToString(","),
                 "allowed_shiny" to allowedShiny.toString()
         )
     }
@@ -126,10 +116,5 @@ open class WebTokenHelper(
         val oneTimeActionSubject = "onetime_link"
         val apiResponseSubject = "api_response"
         val oneTimeLinkLifeSpan: Duration = Duration.ofMinutes(10)
-    }
-
-    open fun generateShinyToken(internalUser: InternalUser): String
-    {
-        return generator.generate(shinyClaims(internalUser))
     }
 }

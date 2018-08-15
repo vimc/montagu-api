@@ -15,7 +15,6 @@ import org.vaccineimpact.api.app.security.montaguPermissions
 import org.vaccineimpact.api.db.Config
 import org.vaccineimpact.api.db.ConfigWrapper
 import org.vaccineimpact.api.models.permissions.ReifiedPermission
-import org.vaccineimpact.api.security.CookieName
 import org.vaccineimpact.api.serialization.ModelBinder
 import spark.Request
 import spark.Response
@@ -91,7 +90,7 @@ class DirectActionContext(private val context: SparkWebContext) : ActionContext
         addResponseHeader("Content-Disposition", """attachment; filename="$filename"""")
     }
 
-    override fun setCookie(name: CookieName, value: String, config: ConfigWrapper)
+    override fun setCookie(value: String, config: ConfigWrapper)
     {
         val secure = if (config.getBool("allow.localhost"))
         {
@@ -102,7 +101,7 @@ class DirectActionContext(private val context: SparkWebContext) : ActionContext
             " Secure;"
         }
         // https://www.owasp.org/index.php/SameSite
-        addResponseHeader("Set-Cookie", "${name.cookieName}=$value; Path=/;$secure HttpOnly; SameSite=Strict")
+        addResponseHeader("Set-Cookie", "jwt_token=$value; Path=/;$secure HttpOnly; SameSite=Strict")
         // Allows the cookie to be set over AJAX (i.e. how we use it from the API)
         addResponseHeader("Access-Control-Allow-Credentials", "true")
     }

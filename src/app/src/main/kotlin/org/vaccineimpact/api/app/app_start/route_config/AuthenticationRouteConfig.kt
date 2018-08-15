@@ -11,13 +11,6 @@ object AuthenticationRouteConfig : RouteConfig
     override val endpoints: List<EndpointDefinition> = listOf(
             Endpoint("/authenticate/", controller, "authenticate", method = HttpMethod.post)
                     .json()
-                    .basicAuth(),
-            Endpoint("/set-shiny-cookie/", controller, "setShinyCookie")
-                    .secure()
-                    .json(),
-            // This endpoint just removes a cookie, to log the user out of the shiny apps
-            // so there is no reason to secure it.
-            Endpoint("/clear-shiny-cookie/", controller, "clearShinyCookie")
-                    .json()
+                    .basicAuth()
     )
 }

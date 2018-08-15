@@ -12,7 +12,6 @@ import org.vaccineimpact.api.app.security.internalUser
 import org.vaccineimpact.api.models.AuthenticationResponse
 import org.vaccineimpact.api.models.FailedAuthentication
 import org.vaccineimpact.api.models.SuccessfulAuthentication
-import org.vaccineimpact.api.security.CookieName
 import org.vaccineimpact.api.security.KeyHelper
 import org.vaccineimpact.api.security.WebTokenHelper
 import org.vaccineimpact.api.security.deflated
@@ -38,24 +37,10 @@ class AuthenticationController(context: ActionContext,
             {
                 val user = context.userProfile!!.internalUser!!
                 val token = userLogic.logInAndGetToken(user).deflated()
-                context.setCookie(CookieName.Main, token)
+                context.setCookie(token)
                 return SuccessfulAuthentication(token, tokenHelper.defaultLifespan)
             }
             is HTMLForm.InvalidForm -> FailedAuthentication(validationResult.problem)
         }
-    }
-
-    fun setShinyCookie(): String
-    {
-        val internalUser = userLogic.getUserByUsername(context.username!!)
-        val shinyToken = tokenHelper.generateShinyToken(internalUser)
-        context.setCookie(CookieName.Shiny, shinyToken)
-        return okayResponse()
-    }
-
-    fun clearShinyCookie(): String
-    {
-        context.setCookie(CookieName.Shiny, "")
-        return okayResponse()
     }
 }
