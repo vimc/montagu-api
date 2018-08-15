@@ -15,6 +15,7 @@ import org.vaccineimpact.api.blackboxTests.helpers.EndpointBuilder
 import org.vaccineimpact.api.db.JooqContext
 import org.vaccineimpact.api.db.Tables.APP_USER
 import org.vaccineimpact.api.security.UserHelper
+import org.vaccineimpact.api.security.inflated
 import org.vaccineimpact.api.test_helpers.DatabaseTest
 
 data class ResponseWithJsonBody(val response: Response, val body: JsonObject)
@@ -79,9 +80,9 @@ class AuthenticationTests : DatabaseTest()
         assertThat(cookie).contains("SameSite=Strict")
 
         val token = cookie.substring(cookie.indexOf("=") + 1, cookie.indexOf(";"))
-        val claims = JWT.decode(token)
+        val claims = JWT.decode(token.inflated())
         val tokenType = claims.getClaim("token_type")
-        assertThat(tokenType.asString()).isEqualTo("bearer")
+        assertThat(tokenType.asString()).isEqualTo("BEARER")
     }
 
     @Test
