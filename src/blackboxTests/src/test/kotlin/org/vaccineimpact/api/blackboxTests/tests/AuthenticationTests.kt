@@ -116,8 +116,16 @@ class AuthenticationTests : DatabaseTest()
     @Test
     fun `correct password does authenticate`()
     {
-        val response = post("email@example.com", "password")
-        assertDoesAuthenticate(response)
+        val response = postAndGetFullResponse("email@example.com", "password")
+        assertDoesAuthenticate(response.asJson())
+        assertThat(response.headers.keys).doesNotContain("Access-Control-Allow-Credentials")
+    }
+
+    @Test
+    fun `authentication endpoint does not return allow credentials header on bad credentials`()
+    {
+        val response = post(url)
+        assertThat(response.headers.keys).doesNotContain("Access-Control-Allow-Credentials")
     }
 
     @Test
@@ -179,14 +187,21 @@ class AuthenticationTests : DatabaseTest()
 
         fun post(username: String, password: String, includeAuth: Boolean = true): JsonObject
         {
+            val response = postAndGetFullResponse(username, password, includeAuth)
+            println(response.text)
+            return response.asJson()
+        }
+
+        fun Response.asJson() = Parser().parse(StringBuilder(this.text)) as JsonObject
+
+        fun postAndGetFullResponse(username: String, password: String, includeAuth: Boolean = true): Response
+        {
             val auth = if (includeAuth) BasicAuthorization(username, password) else null
             val response = post(url,
                     data = mapOf("grant_type" to "client_credentials"),
                     auth = auth
             )
-            val text = response.text
-            println(text)
-            return Parser().parse(StringBuilder(text)) as JsonObject
+            return response
         }
     }
 }

@@ -24,7 +24,8 @@ data class Endpoint(
         override val method: HttpMethod = HttpMethod.get,
         override val postProcess: ResultProcessor = ::passThrough,
         override val requiredPermissions: List<PermissionRequirement> = listOf(),
-        override val basicAuth: Boolean = false
+        override val basicAuth: Boolean = false,
+        override val accessControlAllowCredentials: Boolean = true
 
 ) : EndpointDefinition
 {
@@ -47,7 +48,11 @@ data class Endpoint(
             setupSecurity(url, repositoryFactory)
         }
 
-        Spark.after(url, contentType, DefaultHeadersFilter("$contentType; charset=utf-8", method))
+        Spark.after(url, contentType, DefaultHeadersFilter(
+                "$contentType; charset=utf-8",
+                method,
+                accessControlAllowCredentials
+        ))
     }
 
     private fun addSecurityFilter(url: String, webTokenHelper: WebTokenHelper, repositoryFactory: RepositoryFactory)
@@ -109,6 +114,11 @@ fun Endpoint.csv(): Endpoint
 fun Endpoint.basicAuth(): Endpoint
 {
     return this.copy(basicAuth = true)
+}
+
+fun Endpoint.disableCookies(): Endpoint
+{
+    return this.copy(accessControlAllowCredentials = false)
 }
 
 fun Endpoint.post(): Endpoint

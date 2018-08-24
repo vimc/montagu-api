@@ -5,7 +5,6 @@ import spark.Filter
 import spark.Request
 import spark.Response
 import spark.route.HttpMethod
-import java.util.concurrent.Callable
 import java.util.concurrent.Future
 import javax.servlet.http.HttpServletResponse
 
@@ -27,11 +26,16 @@ fun addTrailingSlashes(req: Request, res: Response)
 
 fun addDefaultResponseHeaders(req: Request,
                               res: Response,
-                              contentType: String = "${ContentTypes.json}; charset=utf-8") = addDefaultResponseHeaders(req, res.raw(), contentType)
+                              contentType: String = "${ContentTypes.json}; charset=utf-8",
+                              accessControlAllowCredentials: Boolean = true)
+{
+    addDefaultResponseHeaders(req, res.raw(), contentType, accessControlAllowCredentials)
+}
 
-
-fun addDefaultResponseHeaders(req: Request, res: HttpServletResponse,
-                              contentType: String = "${ContentTypes.json}; charset=utf-8")
+fun addDefaultResponseHeaders(req: Request,
+                              res: HttpServletResponse,
+                              contentType: String = "${ContentTypes.json}; charset=utf-8",
+                              accessControlAllowCredentials: Boolean = true)
 {
     res.contentType = contentType
     val gzip = req.headers("Accept-Encoding")?.contains("gzip")
@@ -40,16 +44,23 @@ fun addDefaultResponseHeaders(req: Request, res: HttpServletResponse,
         res.addHeader("Content-Encoding", "gzip")
     }
     // This allows cookies to be set and received over AJAX
-    res.addHeader("Access-Control-Allow-Credentials", "true")
+    if (accessControlAllowCredentials)
+    {
+        res.addHeader("Access-Control-Allow-Credentials", "true")
+    }
 }
 
-class DefaultHeadersFilter(val contentType: String, val method: HttpMethod) : Filter
+class DefaultHeadersFilter(
+        val contentType: String,
+        val method: HttpMethod,
+        private val accessControlAllowCredentials: Boolean
+) : Filter
 {
     override fun handle(request: Request, response: Response)
     {
         if (request.requestMethod().equals(method.toString(), ignoreCase = true))
         {
-            addDefaultResponseHeaders(request, response, contentType)
+            addDefaultResponseHeaders(request, response, contentType, accessControlAllowCredentials)
         }
     }
 }

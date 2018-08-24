@@ -11,7 +11,8 @@ object AuthenticationRouteConfig : RouteConfig
     override val endpoints: List<EndpointDefinition> = listOf(
             Endpoint("/authenticate/", controller, "authenticate", method = HttpMethod.post)
                     .json()
-                    .basicAuth(),
+                    .basicAuth()
+                    .disableCookies(),
             Endpoint("/set-cookies/", controller, "setCookies")
                     .secure()
                     .json(),
