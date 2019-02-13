@@ -2,6 +2,7 @@ package org.vaccineimpact.api.app.app_start.route_config
 
 import org.vaccineimpact.api.app.app_start.*
 import org.vaccineimpact.api.app.controllers.GroupBurdenEstimatesController
+import org.vaccineimpact.api.app.controllers.ResumableUploadController
 import spark.route.HttpMethod
 
 object GroupBurdenEstimatesRouteConfig : RouteConfig
@@ -20,6 +21,7 @@ object GroupBurdenEstimatesRouteConfig : RouteConfig
     )
 
     override val endpoints = listOf(
+            Endpoint("$baseUrl/postchunk/", ResumableUploadController::class, "postChunk"),
             // Get and create sets
             Endpoint("$baseUrl/", controller, "getBurdenEstimates")
                     .json()
