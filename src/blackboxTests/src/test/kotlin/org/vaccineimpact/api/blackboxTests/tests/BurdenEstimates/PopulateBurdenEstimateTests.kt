@@ -42,6 +42,29 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
     }
 
     @Test
+    fun `can populate by chunk`()
+    {
+        val setId = JooqContext().use {
+            setUpWithBurdenEstimateSet(it)
+        }
+        val queryParams = mapOf("resumableChunkNumber" to 1,
+                "resumableChunkSize" to 1048576,
+                "resumableCurrentChunkSize" to 132,
+                "resumableTotalSize" to 132,
+                "resumableType" to "text/csv",
+                "resumableIdentifier" to "testcsv",
+                "resumableFilename" to "test.csv",
+                "resumableRelativePath" to "test.csv",
+                "resumableTotalChunks" to 1)
+                .map{ "${it.key}=${it.value}" }
+                .joinToString("&")
+
+        val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
+        val response = RequestHelper().postFile("$setUrl$setId/actions/postchunk/?$queryParams", csvData, token = token)
+        JSONValidator().validateSuccess(response.text)
+    }
+
+    @Test
     fun `can populate central burden estimate via multipart file upload`()
     {
         val setId = JooqContext().use {

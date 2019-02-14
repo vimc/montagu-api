@@ -3,24 +3,25 @@ package org.vaccineimpact.api.app.controllers
 import org.vaccineimpact.api.app.ResumableInfoStorage
 import org.vaccineimpact.api.app.app_start.Controller
 import org.vaccineimpact.api.app.context.ActionContext
+import org.vaccineimpact.api.app.errors.BadRequest
 import org.vaccineimpact.api.app.errors.UnknownObjectError
 import org.vaccineimpact.api.app.models.ResumableInfo
+import org.vaccineimpact.api.app.repositories.Repositories
 import java.io.File
 import java.io.RandomAccessFile
-import javax.servlet.ServletException
 
-class ResumableUploadController(context: ActionContext) : Controller(context)
+class ResumableUploadController(context: ActionContext, repositories: Repositories) : Controller(context)
 {
     fun postChunk(): String
     {
-        val request = context.request
-        val resumableChunkNumber = context.queryParams("resumableChunkNumber")?.toInt()?: -1
+        val resumableChunkNumber = context.queryParams("resumableChunkNumber")?.toInt()
+                ?: throw BadRequest("Missing required query paramter: resumableChunkNumber")
 
         val info = getResumableInfo()
-        val raf = RandomAccessFile(info.resumableFilePath, "rw")
+        val raf = RandomAccessFile(info.filePath, "rw")
 
         //Seek to position
-        raf.seek((resumableChunkNumber - 1) * info.resumableChunkSize)
+        raf.seek((resumableChunkNumber - 1) * info.chunkSize)
 
         //Save to file
         val stream = context.request.raw().inputStream
@@ -40,9 +41,9 @@ class ResumableUploadController(context: ActionContext) : Controller(context)
         raf.close()
 
 
-        //Mark as uploaded.
-        info.uploadedChunks.add(ResumableInfo.ResumableChunkNumber(resumableChunkNumber))
-        return if (info.checkIfUploadFinished())
+        //Mark as uploaded
+        info.uploadedChunks.add(resumableChunkNumber)
+        return if (info.uploadFinished())
         { //Check if all chunks uploaded, and change filename
             ResumableInfoStorage.instance.remove(info)
             "Finished"
@@ -55,44 +56,47 @@ class ResumableUploadController(context: ActionContext) : Controller(context)
 
     fun getChunk(): String
     {
-        val resumableChunkNumber = context.queryParams("resumableChunkNumber")?.toInt()?: -1
+        val resumableChunkNumber = context.queryParams("resumableChunkNumber")?.toInt() ?: -1
 
         val info = getResumableInfo()
 
-        if (info.uploadedChunks.contains(ResumableInfo.ResumableChunkNumber(resumableChunkNumber)))
+        if (info.uploadedChunks.contains(resumableChunkNumber))
         {
             return "OK"
         }
         else
         {
-           throw UnknownObjectError(resumableChunkNumber, "chunk")
+            throw UnknownObjectError(resumableChunkNumber, "chunk")
         }
     }
 
-    @Throws(ServletException::class)
     private fun getResumableInfo(): ResumableInfo
     {
-        val base_dir = UPLOAD_DIR
+        val chunkSize = context.queryParams("resumableChunkSize")?.toLong()
+        val totalSize = context.queryParams("resumableTotalSize")?.toLong()
+        val uniqueIdentifier = context.queryParams("resumableIdentifier")
+        val filename = context.queryParams("resumableFilename")
+        val relativePath = context.queryParams("resumableRelativePath")
 
-        val resumableChunkSize = context.queryParams("resumableChunkSize")?.toLong()?: -1
-        val resumableTotalSize = context.queryParams("resumableTotalSize")?.toLong()?: -1
-        val resumableIdentifier = context.queryParams("resumableIdentifier")!!
-        val resumableFilename = context.queryParams("resumableFilename")!!
-        val resumableRelativePath = context.queryParams("resumableRelativePath")!!
-        //Here we add a ".temp" to every upload file to indicate NON-FINISHED
-        File(base_dir).mkdir()
-        val resumableFilePath = File(base_dir, resumableFilename).absolutePath + ".temp"
-
-        val storage = ResumableInfoStorage.instance
-
-        val info = storage.get(resumableChunkSize, resumableTotalSize,
-                resumableIdentifier, resumableFilename, resumableRelativePath, resumableFilePath)
-        if (!info.valid())
+        if (chunkSize == null || totalSize == null || uniqueIdentifier.isNullOrEmpty() ||
+                filename.isNullOrEmpty() || relativePath.isNullOrEmpty())
         {
-            storage.remove(info)
-            throw ServletException("Invalid request params.")
+            throw BadRequest("You must include all resumablejs query parameters")
         }
-        return info
+
+        val info = ResumableInfoStorage.instance[uniqueIdentifier!!]
+        return if (info != null)
+        {
+            info
+        }
+        else
+        {
+            //Here we add a ".temp" to every upload file to indicate NON-FINISHED
+            File(UPLOAD_DIR).mkdir()
+            val resumableFilePath = File(UPLOAD_DIR, filename).absolutePath + ".temp"
+            ResumableInfo(chunkSize, totalSize, uniqueIdentifier, filename!!, relativePath!!, resumableFilePath)
+        }
+
     }
 
     companion object
