@@ -51,10 +51,8 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
                 "resumableChunkSize" to 1048576,
                 "resumableCurrentChunkSize" to 132,
                 "resumableTotalSize" to 132,
-                "resumableType" to "text/csv",
                 "resumableIdentifier" to "testcsv",
                 "resumableFilename" to "test.csv",
-                "resumableRelativePath" to "test.csv",
                 "resumableTotalChunks" to 1)
                 .map{ "${it.key}=${it.value}" }
                 .joinToString("&")

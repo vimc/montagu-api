@@ -3,21 +3,17 @@ package org.vaccineimpact.api.app.models
 import java.io.File
 import java.util.HashSet
 
-data class ResumableInfo(var chunkSize: Long,
-                         var totalSize: Long,
-                         var uniqueIdentifier: String,
-                         var filename: String,
-                         var relativePath: String,
-                         var filePath: String
+data class ResumableInfo(val totalChunks: Int,
+                         val chunkSize: Long,
+                         val uniqueIdentifier: String,
+                         val filePath: String
 )
 {
     val uploadedChunks = HashSet<Int>()
 
     fun uploadFinished(): Boolean
     {
-        //check if upload finished
-        val count = Math.ceil(totalSize.toDouble() / chunkSize.toDouble()).toInt()
-        for (i in 1 until count)
+        for (i in 1 until totalChunks)
         {
             if (!uploadedChunks.contains(i))
             {

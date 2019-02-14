@@ -40,7 +40,6 @@ class ResumableUploadController(context: ActionContext, repositories: Repositori
         }
         raf.close()
 
-
         //Mark as uploaded
         info.uploadedChunks.add(resumableChunkNumber)
         return if (info.uploadFinished())
@@ -72,14 +71,12 @@ class ResumableUploadController(context: ActionContext, repositories: Repositori
 
     private fun getResumableInfo(): ResumableInfo
     {
+        val totalChunks = context.queryParams("resumableTotalChunks")?.toInt()
         val chunkSize = context.queryParams("resumableChunkSize")?.toLong()
-        val totalSize = context.queryParams("resumableTotalSize")?.toLong()
         val uniqueIdentifier = context.queryParams("resumableIdentifier")
         val filename = context.queryParams("resumableFilename")
-        val relativePath = context.queryParams("resumableRelativePath")
 
-        if (chunkSize == null || totalSize == null || uniqueIdentifier.isNullOrEmpty() ||
-                filename.isNullOrEmpty() || relativePath.isNullOrEmpty())
+        if (totalChunks == null || chunkSize == null || uniqueIdentifier.isNullOrEmpty() || filename.isNullOrEmpty())
         {
             throw BadRequest("You must include all resumablejs query parameters")
         }
@@ -93,8 +90,8 @@ class ResumableUploadController(context: ActionContext, repositories: Repositori
         {
             //Here we add a ".temp" to every upload file to indicate NON-FINISHED
             File(UPLOAD_DIR).mkdir()
-            val resumableFilePath = File(UPLOAD_DIR, filename).absolutePath + ".temp"
-            ResumableInfo(chunkSize, totalSize, uniqueIdentifier, filename!!, relativePath!!, resumableFilePath)
+            val filePath = File(UPLOAD_DIR, filename).absolutePath + ".temp"
+            ResumableInfo(totalChunks, chunkSize, uniqueIdentifier, filePath)
         }
 
     }
