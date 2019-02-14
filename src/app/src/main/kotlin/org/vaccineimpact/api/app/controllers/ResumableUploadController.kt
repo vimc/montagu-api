@@ -12,6 +12,7 @@ import java.io.RandomAccessFile
 
 class ResumableUploadController(context: ActionContext, repositories: Repositories) : Controller(context)
 {
+
     fun postChunk(): String
     {
         val resumableChunkNumber = context.queryParams("resumableChunkNumber")?.toInt()
@@ -43,7 +44,8 @@ class ResumableUploadController(context: ActionContext, repositories: Repositori
         //Mark as uploaded
         info.uploadedChunks.add(resumableChunkNumber)
         return if (info.uploadFinished())
-        { //Check if all chunks uploaded, and change filename
+        {
+            //Check if all chunks uploaded, and change filename
             ResumableInfoStorage.instance.remove(info)
             "Finished"
         }

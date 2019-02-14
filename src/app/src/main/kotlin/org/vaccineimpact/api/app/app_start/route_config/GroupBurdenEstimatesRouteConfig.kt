@@ -21,7 +21,10 @@ object GroupBurdenEstimatesRouteConfig : RouteConfig
     )
 
     override val endpoints = listOf(
-            Endpoint("$baseUrl/:set-id/actions/postchunk/", ResumableUploadController::class, "postChunk", method = HttpMethod.post),
+            Endpoint("$baseUrl/:set-id/actions/postchunk/", controller, "postChunk", method = HttpMethod.post)
+                    .json()
+                    .secure(writePermissions),
+
             // Get and create sets
             Endpoint("$baseUrl/", controller, "getBurdenEstimates")
                     .json()

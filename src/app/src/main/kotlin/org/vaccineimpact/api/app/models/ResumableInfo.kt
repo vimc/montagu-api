@@ -6,7 +6,7 @@ import java.util.HashSet
 data class ResumableInfo(val totalChunks: Int,
                          val chunkSize: Long,
                          val uniqueIdentifier: String,
-                         val filePath: String
+                         var filePath: String
 )
 {
     val uploadedChunks = HashSet<Int>()
@@ -25,6 +25,7 @@ data class ResumableInfo(val totalChunks: Int,
         val file = File(filePath)
         val newPath = file.absolutePath.substring(0, file.absolutePath.length - ".temp".length)
         file.renameTo(File(newPath))
+        filePath = newPath
         return true
     }
 }
