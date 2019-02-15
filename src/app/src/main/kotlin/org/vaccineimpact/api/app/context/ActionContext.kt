@@ -10,6 +10,7 @@ import org.vaccineimpact.api.models.permissions.PermissionSet
 import org.vaccineimpact.api.models.permissions.ReifiedPermission
 import org.vaccineimpact.api.security.CookieName
 import spark.Request
+import java.io.InputStream
 import java.io.OutputStream
 import java.io.Reader
 
@@ -32,7 +33,7 @@ interface ActionContext
     fun queryString(): String?
     fun params(): Map<String, String>
     fun params(key: String): String
-    fun getPart(name: String, multipartData: MultipartData = ServletFileUploadWrapper()): Reader
+    fun getPart(name: String, multipartData: MultipartData = ServletFileUploadWrapper()): InputStream
     fun getParts(multipartData: MultipartData = ServletFileUploadWrapper()): MultipartDataMap
 
     fun requestReader(): Reader

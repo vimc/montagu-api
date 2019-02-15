@@ -56,12 +56,9 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
                 .map { "${it.key}=${it.value}" }
                 .joinToString("&")
 
-        validate("$setUrl$setId/actions/postchunk/?$queryParams", method = HttpMethod.post) withRequestSchema {
-            CSVSchema("BurdenEstimate")
-        } withPermissions { requiredWritePermissions } sending {
-            csvData
-        } andCheckHasStatus 200..299
-
+        val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
+        val response = RequestHelper().postFile("$setUrl$setId/actions/postchunk/?$queryParams", csvData, token = token)
+        JSONValidator().validateSuccess(response.text)
         JooqContext().use { db ->
             val records = db.dsl.select(BURDEN_ESTIMATE.fieldsAsList())
                     .from(BURDEN_ESTIMATE)
@@ -115,13 +112,13 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
     {
         val queryParams = mapOf("resumableChunkNumber" to number,
                 "resumableChunkSize" to 100,
-                "resumableIdentifier" to "testcsv",
-                "resumableFilename" to "test.csv",
+                "resumableIdentifier" to "testchunkingcsv",
+                "resumableFilename" to "testchunking.csv",
                 "resumableTotalChunks" to total)
                 .map { "${it.key}=${it.value}" }
                 .joinToString("&")
 
-        val response = RequestHelper().post("$setUrl$setId/actions/postchunk/?$queryParams", chunk, token)
+        val response = RequestHelper().postFile("$setUrl$setId/actions/postchunk/?$queryParams", chunk, token = token)
         if (validate)
         {
             JSONValidator().validateSuccess(response.text)

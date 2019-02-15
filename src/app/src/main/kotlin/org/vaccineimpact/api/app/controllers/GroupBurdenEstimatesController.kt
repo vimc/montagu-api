@@ -192,7 +192,8 @@ open class GroupBurdenEstimatesController(
         raf.seek((resumableChunkNumber - 1) * info.chunkSize)
 
         //Save to file
-        val stream = context.request.raw().inputStream
+        val stream = context.getPart("file")
+
         var readBytes: Long = 0
         val length = context.request.raw().contentLength
         val bytes = ByteArray(1024 * 100)
@@ -232,7 +233,7 @@ open class GroupBurdenEstimatesController(
                     data
             )
 
-            //File(info.filePath).delete()
+            File(info.filePath).delete()
 
             // Then, maybe close the burden estimate set
             val keepOpen = context.queryParams("keepOpen")?.toBoolean() ?: false

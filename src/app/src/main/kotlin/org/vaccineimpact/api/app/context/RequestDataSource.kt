@@ -37,7 +37,7 @@ class RequestBodySource(private val context: ActionContext) : RequestDataSource
 
 class MultipartStreamSource(val partName: String, private val context: ActionContext) : RequestDataSource
 {
-    override fun getContent() = context.getPart(partName)
+    override fun getContent() = context.getPart(partName).bufferedReader()
 }
 
 data class InMemoryRequestData(val contents: String) : RequestDataSource
