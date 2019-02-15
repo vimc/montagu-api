@@ -159,6 +159,8 @@ open class GroupBurdenEstimatesController(
         val info = ResumableInfoStorage.instance[uniqueIdentifier!!]
         return if (info != null)
         {
+            print("----------------------entry found----------------------------")
+            print(info.uploadedChunks.count())
             info
         }
         else
@@ -166,9 +168,11 @@ open class GroupBurdenEstimatesController(
             //Here we add a ".temp" to every upload file to indicate NON-FINISHED
             File(UPLOAD_DIR).mkdir()
             val filePath = File(UPLOAD_DIR, filename).absolutePath + ".temp"
-            ResumableInfo(totalChunks, chunkSize, uniqueIdentifier, filePath)
-        }
+            print("----------------------no entry found----------------------------")
 
+            ResumableInfoStorage.instance.put(ResumableInfo(totalChunks, chunkSize, uniqueIdentifier, filePath))
+            ResumableInfoStorage.instance[uniqueIdentifier]!!
+        }
     }
 
     companion object
@@ -208,7 +212,6 @@ open class GroupBurdenEstimatesController(
         info.uploadedChunks.add(resumableChunkNumber)
         return if (info.uploadFinished())
         {
-            //Check if all chunks uploaded, and change filename
             ResumableInfoStorage.instance.remove(info)
 
             // First check if we're allowed to see this touchstoneVersion
@@ -229,17 +232,15 @@ open class GroupBurdenEstimatesController(
                     data
             )
 
+            //File(info.filePath).delete()
+
             // Then, maybe close the burden estimate set
             val keepOpen = context.queryParams("keepOpen")?.toBoolean() ?: false
             if (!keepOpen)
             {
                 estimatesLogic.closeBurdenEstimateSet(setId, path.groupId, path.touchstoneVersionId, path.scenarioId)
-                return okayResponse()
             }
-            else
-            {
-                okayResponse()
-            }
+            okayResponse()
         }
         else
         {

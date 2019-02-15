@@ -38,7 +38,7 @@ open class DataTableDeserializer<out T>(
             throw ValidationException(listOf(ErrorInfo("csv-empty", "CSV was empty - no rows or headers were found")))
         }
 
-        val actualHeaderNames = headerRow.map({ it.trim(::shouldTrim) }).toList()
+        val actualHeaderNames = headerRow.map { it.trim(::shouldTrim) }.toList()
         checkHeaders(actualHeaderNames)
         val actualHeaders = getActualHeaderDefinitions(actualHeaderNames)
 

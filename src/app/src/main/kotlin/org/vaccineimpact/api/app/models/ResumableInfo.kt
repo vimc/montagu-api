@@ -13,7 +13,7 @@ data class ResumableInfo(val totalChunks: Int,
 
     fun uploadFinished(): Boolean
     {
-        for (i in 1 until totalChunks)
+        for (i in 1..totalChunks)
         {
             if (!uploadedChunks.contains(i))
             {

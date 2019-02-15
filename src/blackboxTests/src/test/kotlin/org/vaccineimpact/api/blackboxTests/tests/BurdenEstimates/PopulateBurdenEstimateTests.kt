@@ -1,19 +1,20 @@
 package org.vaccineimpact.api.blackboxTests.tests.BurdenEstimates
 
+import com.github.fge.jsonschema.main.JsonValidator
+import khttp.responses.Response
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import org.vaccineimpact.api.blackboxTests.helpers.RequestHelper
-import org.vaccineimpact.api.blackboxTests.helpers.TestUserHelper
-import org.vaccineimpact.api.blackboxTests.helpers.getResultFromRedirect
-import org.vaccineimpact.api.blackboxTests.helpers.validate
+import org.vaccineimpact.api.blackboxTests.helpers.*
 import org.vaccineimpact.api.blackboxTests.schemas.CSVSchema
 import org.vaccineimpact.api.db.JooqContext
 import org.vaccineimpact.api.db.Tables.BURDEN_ESTIMATE
 import org.vaccineimpact.api.db.Tables.BURDEN_ESTIMATE_STOCHASTIC
 import org.vaccineimpact.api.db.fieldsAsList
+import org.vaccineimpact.api.models.BurdenEstimate
 import org.vaccineimpact.api.models.permissions.PermissionSet
 import org.vaccineimpact.api.validateSchema.JSONValidator
 import spark.route.HttpMethod
+import kotlin.math.floor
 
 class PopulateBurdenEstimateTests : BurdenEstimateTests()
 {
@@ -42,7 +43,7 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
     }
 
     @Test
-    fun `can populate by chunk`()
+    fun `can populate by single chunk`()
     {
         val setId = JooqContext().use {
             setUpWithBurdenEstimateSet(it)
@@ -52,7 +53,7 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
                 "resumableIdentifier" to "testcsv",
                 "resumableFilename" to "test.csv",
                 "resumableTotalChunks" to 1)
-                .map{ "${it.key}=${it.value}" }
+                .map { "${it.key}=${it.value}" }
                 .joinToString("&")
 
         validate("$setUrl$setId/actions/postchunk/?$queryParams", method = HttpMethod.post) withRequestSchema {
@@ -67,6 +68,65 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
                     .fetch()
             assertThat(records).isNotEmpty
         }
+    }
+
+    @Test
+    fun `can populate by multiple chunks and get validation error`()
+    {
+        val setId = JooqContext().use {
+            setUpWithBurdenEstimateSet(it)
+        }
+
+        val chunkSize = 100
+        val data = longCsvData.chunked(chunkSize)
+        val numChunks = data.count()
+
+        val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
+        var response = sendChunk(setId, 1, data[0], numChunks, token)
+        assertThat(response.text).contains("Upload")
+
+        JooqContext().use { db ->
+            val records = db.dsl.select(BURDEN_ESTIMATE.fieldsAsList())
+                    .from(BURDEN_ESTIMATE)
+                    .fetch()
+            assertThat(records).isEmpty()
+        }
+
+        for (i in 1 until numChunks)
+        {
+            response = sendChunk(setId, i + 1, data[i], numChunks, token, validate = i + 1 < numChunks)
+        }
+        assertThat(response.text).contains("We are not expecting data for age 50 and year 1998")
+
+        JooqContext().use { db ->
+            val records = db.dsl.select(BURDEN_ESTIMATE.fieldsAsList())
+                    .from(BURDEN_ESTIMATE)
+                    .fetch()
+            assertThat(records).isEmpty()
+        }
+    }
+
+    private fun sendChunk(setId: Int,
+                          number: Int,
+                          chunk: String,
+                          total: Int,
+                          token: TokenLiteral,
+                          validate: Boolean = true): Response
+    {
+        val queryParams = mapOf("resumableChunkNumber" to number,
+                "resumableChunkSize" to 100,
+                "resumableIdentifier" to "testcsv",
+                "resumableFilename" to "test.csv",
+                "resumableTotalChunks" to total)
+                .map { "${it.key}=${it.value}" }
+                .joinToString("&")
+
+        val response = RequestHelper().post("$setUrl$setId/actions/postchunk/?$queryParams", chunk, token)
+        if (validate)
+        {
+            JSONValidator().validateSuccess(response.text)
+        }
+        return response
     }
 
     @Test
