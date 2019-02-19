@@ -1,11 +1,10 @@
 package org.vaccineimpact.api.app.context
 
-import java.io.Reader
-import java.io.StringReader
+import java.io.InputStream
 
 interface RequestDataSource
 {
-    fun getContent(): Reader
+    fun getContent(): InputStream
 
     companion object
     {
@@ -32,15 +31,15 @@ interface RequestDataSource
 
 class RequestBodySource(private val context: ActionContext) : RequestDataSource
 {
-    override fun getContent() = context.requestReader()
+    override fun getContent() = context.getInputStream()
 }
 
 class MultipartStreamSource(val partName: String, private val context: ActionContext) : RequestDataSource
 {
-    override fun getContent() = context.getPart(partName).bufferedReader()
+    override fun getContent() = context.getPart(partName)
 }
 
 data class InMemoryRequestData(val contents: String) : RequestDataSource
 {
-    override fun getContent() = StringReader(contents)
+    override fun getContent() = contents.byteInputStream()
 }

@@ -3,27 +3,29 @@ package org.vaccineimpact.api.app
 import org.vaccineimpact.api.app.models.ResumableInfo
 import java.util.HashMap
 
-class ResumableInfoCache
+interface Cache<T> {
+    operator fun get(uniqueIdentifier: String): T?
+    fun put(item: T)
+    fun remove(item: T)
+}
+
+object ResumableInfoCache: Cache<ResumableInfo>
 {
     private val memoryCache = HashMap<String, ResumableInfo>()
 
-    operator fun get(uniqueIdentifier: String): ResumableInfo?
+    override operator fun get(uniqueIdentifier: String): ResumableInfo?
     {
         return memoryCache[uniqueIdentifier]
     }
 
-    fun put(resumableInfo: ResumableInfo)
+    override fun put(item: ResumableInfo)
     {
-        memoryCache[resumableInfo.uniqueIdentifier] = resumableInfo
+        memoryCache[item.uniqueIdentifier] = item
     }
 
-    fun remove(info: ResumableInfo)
+    override fun remove(item: ResumableInfo)
     {
-        memoryCache.remove(info.uniqueIdentifier)
+        memoryCache.remove(item.uniqueIdentifier)
     }
 
-    companion object
-    {
-        val instance: ResumableInfoCache = ResumableInfoCache()
-    }
 }

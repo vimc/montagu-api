@@ -36,7 +36,7 @@ interface ActionContext
     fun getPart(name: String, multipartData: MultipartData = ServletFileUploadWrapper()): InputStream
     fun getParts(multipartData: MultipartData = ServletFileUploadWrapper()): MultipartDataMap
 
-    fun requestReader(): Reader
+    fun getInputStream(): InputStream
     fun <T : Any> postData(klass: Class<T>): T
 
     fun addResponseHeader(key: String, value: String): Unit

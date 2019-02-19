@@ -1,5 +1,6 @@
 package org.vaccineimpact.api.app.context
 
+import com.sun.corba.se.spi.orbutil.fsm.Input
 import org.apache.commons.fileupload.FileItemStream
 import org.pac4j.core.profile.CommonProfile
 import org.pac4j.core.profile.ProfileManager
@@ -71,7 +72,7 @@ class DirectActionContext(private val context: SparkWebContext) : ActionContext
         return multipartData.parts(rawRequest)
     }
 
-    override fun requestReader(): BufferedReader = request.raw().inputStream.bufferedReader()
+    override fun getInputStream(): InputStream = request.raw().inputStream
 
     override fun setResponseStatus(status: Int)
     {

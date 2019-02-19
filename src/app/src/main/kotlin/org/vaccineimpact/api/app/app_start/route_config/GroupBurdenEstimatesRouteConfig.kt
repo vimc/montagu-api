@@ -37,6 +37,15 @@ object GroupBurdenEstimatesRouteConfig : RouteConfig
             Endpoint("$baseUrl/:set-id/", controller, "populateBurdenEstimateSet", method = HttpMethod.post)
                     .json()
                     .secure(writePermissions),
+
+            Endpoint("$baseUrl/:set-id/actions/upload/", controller, "uploadBurdenEstimateFile", method = HttpMethod.post)
+                    .json()
+                    .secure(writePermissions),
+
+            Endpoint("$baseUrl/:set-id/actions/populate/", controller, "populateBurdenEstimateSetFromLocalFile", method = HttpMethod.post)
+                    .json()
+                    .secure(writePermissions),
+
             // Actions
             Endpoint("$baseUrl/:set-id/actions/clear/",
                     controller, "clearBurdenEstimateSet", method = HttpMethod.post)
