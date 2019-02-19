@@ -14,6 +14,7 @@ demo/out
 lib/
 spec/.idea/*
 src/*/build/*
+src/app/upload_dir
 src/*/out/
 src/.gradle
 src/.idea/.name
