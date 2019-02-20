@@ -1,7 +1,7 @@
 package org.vaccineimpact.api.app.models
 
 import java.io.File
-import java.util.HashSet
+import java.util.concurrent.ConcurrentHashMap
 
 data class ResumableInfo(val totalChunks: Int,
                          val chunkSize: Long,
@@ -9,13 +9,13 @@ data class ResumableInfo(val totalChunks: Int,
                          var filePath: String
 )
 {
-    val uploadedChunks = HashSet<Int>()
+    val uploadedChunks = ConcurrentHashMap<Int, Boolean>()
 
     fun uploadFinished(): Boolean
     {
         for (i in 1..totalChunks)
         {
-            if (!uploadedChunks.contains(i))
+            if (!uploadedChunks.containsKey(i))
             {
                 return false
             }

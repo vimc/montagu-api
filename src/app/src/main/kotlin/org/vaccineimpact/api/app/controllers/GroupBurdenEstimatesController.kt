@@ -36,7 +36,7 @@ open class GroupBurdenEstimatesController(
         private val estimateRepository: BurdenEstimateRepository,
         private val postDataHelper: PostDataHelper = PostDataHelper(),
         private val tokenHelper: WebTokenHelper = WebTokenHelper(KeyHelper.keyPair),
-        private val resumableInfoCache: Cache<ResumableInfo> = ResumableInfoCache,
+        private val resumableInfoCache: Cache<ResumableInfo> = ResumableInfoCache.instance,
         private val serializer: Serializer = MontaguSerializer.instance
 ) : Controller(context)
 {
@@ -142,7 +142,7 @@ open class GroupBurdenEstimatesController(
         raf.close()
 
         //Mark as uploaded
-        info.uploadedChunks.add(resumableChunkNumber)
+        info.uploadedChunks[resumableChunkNumber] = true
         return okayResponse()
     }
 
