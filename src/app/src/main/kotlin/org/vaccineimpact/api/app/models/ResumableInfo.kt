@@ -9,6 +9,9 @@ data class ResumableInfo(val totalChunks: Int,
                          var filePath: String
 )
 {
+    constructor(totalChunks: Int, chunkSize: Long, uniqueIdentifier: String, file: File):
+            this(totalChunks, chunkSize, uniqueIdentifier, "${file.absolutePath}.temp")
+
     val uploadedChunks = ConcurrentHashMap<Int, Boolean>()
 
     fun uploadFinished(): Boolean
@@ -23,9 +26,12 @@ data class ResumableInfo(val totalChunks: Int,
 
         //Upload finished, change filename.
         val file = File(filePath)
-        val newPath = file.absolutePath.substring(0, file.absolutePath.length - ".temp".length)
-        file.renameTo(File(newPath))
+        val newPath = filePath.substring(0, filePath.length - ".temp".length)
         filePath = newPath
-        return true
+        return file.renameTo(File(newPath))
+    }
+
+    fun cleanUp() {
+        File(filePath).delete()
     }
 }

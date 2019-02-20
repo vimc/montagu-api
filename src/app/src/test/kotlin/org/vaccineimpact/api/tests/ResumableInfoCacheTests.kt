@@ -34,7 +34,7 @@ class ResumableInfoCacheTests : MontaguTests()
         var result = sut["uid"]
         assertThat(result).isSameAs(testInfo)
 
-        sut.remove(testInfo)
+        sut.remove("uid")
 
         result = sut["uid"]
         assertThat(result).isNull()

@@ -1,13 +1,15 @@
 package org.vaccineimpact.api.app.app_start.route_config
 
 import org.vaccineimpact.api.app.app_start.*
-import org.vaccineimpact.api.app.controllers.GroupBurdenEstimatesController
+import org.vaccineimpact.api.app.controllers.BurdenEstimateUploadController
+import org.vaccineimpact.api.app.controllers.BurdenEstimatesController
 import spark.route.HttpMethod
 
-object GroupBurdenEstimatesRouteConfig : RouteConfig
+object BurdenEstimatesRouteConfig : RouteConfig
 {
     private val baseUrl = "/modelling-groups/:group-id/responsibilities/:touchstone-version-id/:scenario-id/estimate-sets"
-    private val controller = GroupBurdenEstimatesController::class
+    private val controller = BurdenEstimatesController::class
+    private val uploadController = BurdenEstimateUploadController::class
 
     private val groupScope = "modelling-group:<group-id>"
     private val readPermissions = setOf(
@@ -34,15 +36,15 @@ object GroupBurdenEstimatesRouteConfig : RouteConfig
                     .secure(readPermissions),
 
             // Populate sets
-            Endpoint("$baseUrl/:set-id/", controller, "populateBurdenEstimateSet", method = HttpMethod.post)
+            Endpoint("$baseUrl/:set-id/", uploadController, "populateBurdenEstimateSet", method = HttpMethod.post)
                     .json()
                     .secure(writePermissions),
 
-            Endpoint("$baseUrl/:set-id/actions/upload/", controller, "uploadBurdenEstimateFile", method = HttpMethod.post)
+            Endpoint("$baseUrl/:set-id/actions/upload/", uploadController, "uploadBurdenEstimateFile", method = HttpMethod.post)
                     .json()
                     .secure(writePermissions),
 
-            Endpoint("$baseUrl/:set-id/actions/populate/", controller, "populateBurdenEstimateSetFromLocalFile", method = HttpMethod.post)
+            Endpoint("$baseUrl/:set-id/actions/populate/", uploadController, "populateBurdenEstimateSetFromLocalFile", method = HttpMethod.post)
                     .json()
                     .secure(writePermissions),
 

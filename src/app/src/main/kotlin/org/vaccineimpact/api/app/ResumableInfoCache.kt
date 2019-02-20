@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 interface Cache<T> {
     operator fun get(uniqueIdentifier: String): T?
     fun put(item: T)
-    fun remove(item: T)
+    fun remove(uniqueIdentifier: String)
 }
 
 class ResumableInfoCache(val flushInterval: Long = TimeUnit.HOURS.toMillis(1)): Cache<ResumableInfo>
@@ -29,17 +29,18 @@ class ResumableInfoCache(val flushInterval: Long = TimeUnit.HOURS.toMillis(1)): 
         memoryCache[item.uniqueIdentifier] = item
     }
 
-    override fun remove(item: ResumableInfo)
+    override fun remove(uniqueIdentifier: String)
     {
-        lastAccessedMap.remove(item.uniqueIdentifier)
-        memoryCache.remove(item.uniqueIdentifier)
+        memoryCache[uniqueIdentifier]?.cleanUp()
+        lastAccessedMap.remove(uniqueIdentifier)
+        memoryCache.remove(uniqueIdentifier)
     }
 
     private fun recycle() {
         lastAccessedMap.filter {
             it.value < System.currentTimeMillis() - flushInterval
         }.map {
-            memoryCache.remove(it.key)
+           remove(it.key)
         }
     }
 
