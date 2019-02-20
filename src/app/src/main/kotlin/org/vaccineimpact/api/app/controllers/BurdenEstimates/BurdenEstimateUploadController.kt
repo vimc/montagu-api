@@ -80,13 +80,25 @@ class BurdenEstimateUploadController(context: ActionContext,
     fun getUploadToken(): String
     {
         val path = getValidResponsibilityPath(context, estimateRepository)
+        val setId = context.params(":set-id").toInt()
+
+        // Check that this is a central estimate set
+        val metadata = estimateRepository.getBurdenEstimateSet(path.groupId,
+                path.touchstoneVersionId,
+                path.scenarioId,
+                setId)
+
+        if (metadata.isStochastic())
+        {
+            throw BadRequest("Stochastic estimate upload not supported")
+        }
 
         return tokenHelper.generateUploadEstimatesToken(
                 context.username!!,
                 path.groupId,
                 path.touchstoneVersionId,
                 path.scenarioId,
-                context.params(":set-id").toInt(),
+                setId,
                 context.params(":file-name"))
     }
 
@@ -140,17 +152,6 @@ class BurdenEstimateUploadController(context: ActionContext,
             val data = DataTableDeserializer.deserialize(File(info.filePath).reader(),
                     BurdenEstimate::class, serializer).map {
                 BurdenEstimateWithRunId(it, runId = null)
-            }
-
-            // Next, get the metadata that will enable us to interpret the CSV
-            val metadata = estimateRepository.getBurdenEstimateSet(path.groupId,
-                    path.touchstoneVersionId,
-                    path.scenarioId,
-                    path.setId)
-
-            if (metadata.isStochastic())
-            {
-                throw BadRequest("Stochastic estimate upload not supported")
             }
 
             estimatesLogic.populateBurdenEstimateSet(

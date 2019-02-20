@@ -118,6 +118,20 @@ class UploadBurdenEstimatesControllerTests : BurdenEstimateControllerTestsBase()
     }
 
     @Test
+    fun `can get upload token`()
+    {
+        val mockTokenHelper = mock<WebTokenHelper> {
+            on { generateUploadEstimatesToken("username", "group-1", "touchstone-1", "scenario-1", 1, "file.csv") } doReturn "TOKEN"
+        }
+
+        val sut = BurdenEstimateUploadController(mockActionContext(), mock(), mockLogic(),
+                mockEstimatesRepository(mockTouchstones()), mock(),
+                mockTokenHelper, mock())
+        val result = sut.getUploadToken()
+        assertThat(result).isEqualTo("TOKEN")
+    }
+
+    @Test
     fun `can populate central estimate set from local file`()
     {
         val touchstoneSet = mockTouchstones()
@@ -271,7 +285,6 @@ class UploadBurdenEstimatesControllerTests : BurdenEstimateControllerTestsBase()
                             "group-id" to "g1",
                             "scenario-id" to "s1",
                             "touchstone-id" to "t1",
-                            "fileName" to "test.csv",
                             "set-id" to 1,
                             "uid" to uid)
         }
@@ -317,6 +330,7 @@ class UploadBurdenEstimatesControllerTests : BurdenEstimateControllerTestsBase()
             on { username } doReturn "username"
             on { contentType() } doReturn "text/csv"
             on { params(":set-id") } doReturn "1"
+            on { params(":file-name") } doReturn "file.csv"
             on { params(":group-id") } doReturn "group-1"
             on { params(":touchstone-version-id") } doReturn "touchstone-1"
             on { params(":scenario-id") } doReturn "scenario-1"

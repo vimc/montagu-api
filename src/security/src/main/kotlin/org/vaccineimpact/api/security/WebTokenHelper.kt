@@ -30,7 +30,9 @@ open class WebTokenHelper(
         return generator.generate(claims(user, lifeSpan))
     }
 
-    open fun generateUploadEstimatesToken(username: String, groupId: String, touchstoneVersionId: String,
+    open fun generateUploadEstimatesToken(username: String,
+                                          groupId: String,
+                                          touchstoneVersionId: String,
                                           scenarioId: String,
                                           setId: Int,
                                           fileName: String): String

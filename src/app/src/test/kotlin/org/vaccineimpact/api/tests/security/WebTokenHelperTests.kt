@@ -18,6 +18,7 @@ import org.vaccineimpact.api.test_helpers.MontaguTests
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class WebTokenHelperTests : MontaguTests()
 {
@@ -225,5 +226,29 @@ class WebTokenHelperTests : MontaguTests()
         assertThat(claims["token_type"]).isEqualTo("API_RESPONSE")
         assertThat(claims["sub"]).isEqualTo("api_response")
         assertThat(claims["result"]).isEqualTo("errorResult")
+    }
+
+
+    @Test
+    fun `can generate upload estimates token`()
+    {
+        val sut = WebTokenHelper(KeyHelper.generateKeyPair())
+        val now = Instant.now()
+        val result = sut.generateUploadEstimatesToken("user.name", "g1", "t1", "s1", 3, "file.csv")
+        val claims = sut.verify(result, TokenType.UPLOAD)
+
+        assertThat(claims["sub"]).isEqualTo("user.name")
+        assertThat(claims["iss"]).isEqualTo("vaccineimpact.org")
+        assertThat(claims["group-id"]).isEqualTo("g1")
+        assertThat(claims["touchstone-id"]).isEqualTo("t1")
+        assertThat(claims["scenario-id"]).isEqualTo("s1")
+        assertThat(claims["set-id"].toString()).isEqualTo("3")
+        assertThat(claims["token_type"]).isEqualTo("UPLOAD")
+
+        val uid = claims["uid"].toString()
+        val timestamp = Instant.parse(uid.split("-").takeLast(3).joinToString("-"))
+        val setId = uid.split("-")[0]
+        assertThat(setId).isEqualTo("3")
+        assertThat(timestamp.toEpochMilli() - now.toEpochMilli()).isLessThan(TimeUnit.SECONDS.toMillis(1))
     }
 }
