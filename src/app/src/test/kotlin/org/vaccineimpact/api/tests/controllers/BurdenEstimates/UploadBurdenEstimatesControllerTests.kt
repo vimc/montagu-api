@@ -131,6 +131,26 @@ class UploadBurdenEstimatesControllerTests : BurdenEstimateControllerTestsBase()
         assertThat(result).isEqualTo("TOKEN")
     }
 
+
+    @Test
+    fun `can not get upload token for stochastic set`()
+    {
+        val mockTokenHelper = mock<WebTokenHelper> {
+            on { generateUploadEstimatesToken("username", "group-1", "touchstone-1", "scenario-1", 1, "file.csv") } doReturn "TOKEN"
+        }
+
+        val repo = mockEstimatesRepository(mockTouchstones(), existingBurdenEstimateSet = defaultEstimateSet.copy(
+                type = BurdenEstimateSetType(BurdenEstimateSetTypeCode.STOCHASTIC)))
+
+        val sut = BurdenEstimateUploadController(mockActionContext(), mock(), mockLogic(),
+                repo, mock(),
+                mockTokenHelper, mock())
+        assertThatThrownBy { sut.getUploadToken() }
+                .isInstanceOf(BadRequest::class.java)
+                .hasMessageContaining("Stochastic estimate upload not supported")
+
+    }
+
     @Test
     fun `can populate central estimate set from local file`()
     {
