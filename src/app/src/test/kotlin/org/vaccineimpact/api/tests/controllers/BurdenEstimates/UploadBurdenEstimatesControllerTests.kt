@@ -8,7 +8,7 @@ import org.junit.Test
 import org.mockito.Mockito
 import org.vaccineimpact.api.app.ResumableInfoCache
 import org.vaccineimpact.api.app.context.ActionContext
-import org.vaccineimpact.api.app.controllers.BurdenEstimateUploadController
+import org.vaccineimpact.api.app.controllers.BurdenEstimates.BurdenEstimateUploadController
 import org.vaccineimpact.api.app.errors.BadRequest
 import org.vaccineimpact.api.app.errors.MissingRowsError
 import org.vaccineimpact.api.app.logic.BurdenEstimateLogic
