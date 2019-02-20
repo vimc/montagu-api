@@ -13,12 +13,13 @@ class ResumableInfoTests : MontaguTests()
     fun `detects upload has finished when all chunks are present`()
     {
         val sut = ResumableInfo(totalChunks = 10, chunkSize = 100, uniqueIdentifier = "uid", filePath = "file.csv")
-
+        File(sut.filePath).createNewFile()
         for (i in 1..10)
         {
             sut.uploadedChunks[i] = true
             assertThat(sut.uploadFinished()).isEqualTo(i == 10)
         }
+        File(sut.filePath).delete()
     }
 
     @Test

@@ -5,6 +5,7 @@ import org.junit.Test
 import org.vaccineimpact.api.app.ResumableInfoCache
 import org.vaccineimpact.api.app.models.ResumableInfo
 import org.vaccineimpact.api.test_helpers.MontaguTests
+import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
@@ -108,6 +109,7 @@ class ResumableInfoCacheTests : MontaguTests()
 
         var result = false
         val threads = mutableListOf<Thread>()
+        File(testInfo.filePath).createNewFile()
         for (i in 1..10)
         {
             threads.add(
@@ -122,6 +124,7 @@ class ResumableInfoCacheTests : MontaguTests()
             // just wait for threads to finish
         }
 
+        File(testInfo.filePath).delete()
         assertThat(result).isTrue()
     }
 
