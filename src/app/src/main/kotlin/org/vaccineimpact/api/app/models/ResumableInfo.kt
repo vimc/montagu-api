@@ -1,6 +1,8 @@
 package org.vaccineimpact.api.app.models
 
+import org.vaccineimpact.api.app.errors.UnexpectedError
 import java.io.File
+import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
 data class ResumableInfo(val totalChunks: Int,
@@ -24,11 +26,15 @@ data class ResumableInfo(val totalChunks: Int,
             }
         }
 
-        //Upload finished, change filename.
+        //Upload finished, change filename
         val file = File(filePath)
         val newPath = filePath.substring(0, filePath.length - ".temp".length)
+
+        if (!file.renameTo(File(newPath))){
+            throw IOException("Unable to rename file")
+        }
         filePath = newPath
-        return file.renameTo(File(newPath))
+        return true
     }
 
     fun cleanUp() {
