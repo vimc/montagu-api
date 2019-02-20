@@ -1,8 +1,8 @@
 package org.vaccineimpact.api.app.app_start.route_config
 
 import org.vaccineimpact.api.app.app_start.*
-import org.vaccineimpact.api.app.controllers.BurdenEstimateUploadController
-import org.vaccineimpact.api.app.controllers.BurdenEstimatesController
+import org.vaccineimpact.api.app.controllers.BurdenEstimates.BurdenEstimateUploadController
+import org.vaccineimpact.api.app.controllers.BurdenEstimates.BurdenEstimatesController
 import spark.route.HttpMethod
 
 object BurdenEstimatesRouteConfig : RouteConfig

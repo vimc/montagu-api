@@ -6,7 +6,7 @@ import org.junit.Test
 import org.mockito.Mockito
 import org.vaccineimpact.api.app.context.ActionContext
 import org.vaccineimpact.api.app.context.postData
-import org.vaccineimpact.api.app.controllers.BurdenEstimatesController
+import org.vaccineimpact.api.app.controllers.BurdenEstimates.BurdenEstimatesController
 import org.vaccineimpact.api.app.errors.MissingRowsError
 import org.vaccineimpact.api.app.logic.BurdenEstimateLogic
 import org.vaccineimpact.api.app.repositories.BurdenEstimateRepository
