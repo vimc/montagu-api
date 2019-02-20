@@ -252,20 +252,23 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
         val setId = JooqContext().use {
             setUpWithBurdenEstimateSet(it)
         }
-        val uniqueIdentifier = Instant.now().toString() + "test.csv"
+        val fileName = "test.csv"
+
+        val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
+        val uploadToken = TokenFetcher().getUploadToken("$setUrl$setId", fileName, token)
+
         val queryParams = mapOf("resumableChunkNumber" to 1,
                 "resumableChunkSize" to 1048576,
-                "resumableIdentifier" to uniqueIdentifier,
-                "resumableFilename" to "test.csv",
+                "resumableIdentifier" to uploadToken,
+                "resumableFilename" to  fileName,
                 "resumableTotalChunks" to 1)
                 .map { "${it.key}=${it.value}" }
                 .joinToString("&")
 
-        val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
-        var response = RequestHelper().postFile("$setUrl$setId/actions/upload/?$queryParams", csvData, token = token)
+        var response = RequestHelper().postFile("$setUrl$setId/actions/upload/$uploadToken/?$queryParams", csvData, token = token)
         JSONValidator().validateSuccess(response.text)
 
-        response = populateFromFile(setId, 1, uniqueIdentifier, token)
+        response = populateFromFile(setId, 1, uploadToken, token)
         JSONValidator().validateSuccess(response.text)
 
         JooqContext().use { db ->
@@ -282,14 +285,14 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
         val setId = JooqContext().use {
             setUpWithBurdenEstimateSet(it, yearMinInclusive = 1996, yearMaxInclusive = 1999)
         }
-
-        val uniqueIdentifier = Instant.now().toString() + "test.csv"
+        val fileName = "test.csv"
+        val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
+        val uploadToken = TokenFetcher().getUploadToken("$setUrl$setId", fileName, token)
         val chunkSize = 100
         val data = longCsvData.chunked(chunkSize)
         val numChunks = data.count()
 
-        val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
-        sendChunk(setId, 1, data[0], numChunks, uniqueIdentifier, token)
+        sendChunk(setId, 1, data[0], numChunks, uploadToken, token)
 
         JooqContext().use { db ->
             val records = db.dsl.select(BURDEN_ESTIMATE.fieldsAsList())
@@ -300,10 +303,10 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
 
         for (i in 1 until numChunks)
         {
-            sendChunk(setId, i + 1, data[i], numChunks, uniqueIdentifier, token)
+            sendChunk(setId, i + 1, data[i], numChunks, uploadToken, token)
         }
 
-        val response = populateFromFile(setId, numChunks, uniqueIdentifier, token)
+        val response = populateFromFile(setId, numChunks, uploadToken, token)
         JSONValidator().validateSuccess(response.text)
     }
 
@@ -313,14 +316,15 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
         val setId = JooqContext().use {
             setUpWithBurdenEstimateSet(it)
         }
-
-        val uniqueIdentifier = Instant.now().toString() + "test.csv"
+        val fileName = "test.csv"
         val chunkSize = 100
         val data = longCsvData.chunked(chunkSize)
         val numChunks = data.count()
 
         val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
-        var response = sendChunk(setId, 1, data[0], numChunks, uniqueIdentifier, token)
+
+        val uploadToken = TokenFetcher().getUploadToken("$setUrl$setId", fileName, token)
+        var response = sendChunk(setId, 1, data[0], numChunks, uploadToken, token)
         JSONValidator().validateSuccess(response.text)
 
         JooqContext().use { db ->
@@ -332,12 +336,12 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
 
         for (i in 1 until numChunks)
         {
-            response = sendChunk(setId, i + 1, data[i], numChunks, uniqueIdentifier, token)
+            response = sendChunk(setId, i + 1, data[i], numChunks, uploadToken, token)
         }
 
         JSONValidator().validateSuccess(response.text)
 
-        response = populateFromFile(setId, numChunks, uniqueIdentifier, token)
+        response = populateFromFile(setId, numChunks, uploadToken, token)
         assertThat(response.text).contains("We are not expecting data for age 50 and year 1998")
 
         JooqContext().use { db ->
@@ -355,50 +359,51 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
             setUpWithBurdenEstimateSet(it, yearMinInclusive = 1996, yearMaxInclusive = 1999)
         }
 
-        val uniqueIdentifier = Instant.now().toString() + "test.csv"
+        val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
+        val uploadToken = TokenFetcher().getUploadToken("$setUrl$setId", "test.csv", token)
+
         val chunkSize = 100
         val data = longCsvData.chunked(chunkSize)
         val numChunks = data.count()
 
-        val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
-        sendChunk(setId, 1, data[0], numChunks, uniqueIdentifier, token)
+        sendChunk(setId, 1, data[0], numChunks, uploadToken, token)
 
-        val response = populateFromFile(setId, numChunks, uniqueIdentifier, token)
+        val response = populateFromFile(setId, numChunks, uploadToken, token)
         assertThat(response.text).contains("This file has not been fully uploaded")
         assertThat(response.statusCode).isEqualTo(400)
     }
 
     private fun populateFromFile(setId: Int,
                                  total: Int,
-                                 uniqueId: String,
+                                 uploadToken: String,
                                  token: TokenLiteral): Response
     {
         val queryParams = mapOf("resumableChunkSize" to 100,
-                "resumableIdentifier" to uniqueId,
-                "resumableFilename" to uniqueId,
+                "resumableIdentifier" to uploadToken,
+                "resumableFilename" to uploadToken,
                 "resumableTotalChunks" to total)
                 .map { "${it.key}=${it.value}" }
                 .joinToString("&")
 
-        return RequestHelper().post("$setUrl$setId/actions/populate/?$queryParams", token = token)
+        return RequestHelper().post("$setUrl$setId/actions/populate/$uploadToken/?$queryParams", token = token)
     }
 
     private fun sendChunk(setId: Int,
                           number: Int,
                           chunk: String,
                           total: Int,
-                          uniqueId: String,
+                          uploadToken: String,
                           token: TokenLiteral): Response
     {
         val queryParams = mapOf("resumableChunkNumber" to number,
                 "resumableChunkSize" to 100,
-                "resumableIdentifier" to uniqueId,
-                "resumableFilename" to uniqueId,
+                "resumableIdentifier" to uploadToken,
+                "resumableFilename" to "test.csv",
                 "resumableTotalChunks" to total)
                 .map { "${it.key}=${it.value}" }
                 .joinToString("&")
 
-        val response = RequestHelper().postFile("$setUrl$setId/actions/upload/?$queryParams", chunk, token = token)
+        val response = RequestHelper().postFile("$setUrl$setId/actions/upload/$token/?$queryParams", chunk, token = token)
         JSONValidator().validateSuccess(response.text)
         return response
     }

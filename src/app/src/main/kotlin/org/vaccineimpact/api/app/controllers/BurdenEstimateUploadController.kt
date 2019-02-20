@@ -87,7 +87,7 @@ class BurdenEstimateUploadController(context: ActionContext,
                 path.touchstoneVersionId,
                 path.scenarioId,
                 context.params(":set-id").toInt(),
-                context.params("fileName"))
+                context.params(":file-name"))
     }
 
     fun uploadBurdenEstimateFile(): String
