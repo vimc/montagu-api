@@ -7,6 +7,9 @@ data class ResponsibilityPath(val groupId: String, val touchstoneVersionId: Stri
 {
     constructor(context: ActionContext)
             : this(context.params(":group-id"), context.params(":touchstone-version-id"), context.params(":scenario-id"))
+
+    constructor(claims: Map<String, Any>)
+            : this(claims["group"].toString(), claims["touchstoneVersionId"].toString(), claims["scenarioId"].toString())
 }
 
 

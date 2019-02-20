@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Before
 import org.junit.Test
+import org.vaccineimpact.api.app.errors.BadRequest
 import org.vaccineimpact.api.models.ErrorInfo
 import org.vaccineimpact.api.models.Result
 import org.vaccineimpact.api.models.ResultStatus
@@ -52,7 +53,7 @@ class WebTokenHelperTests : MontaguTests()
     fun `can generate bearer token`()
     {
         val token = sut.generateToken(InternalUser(properties, roles, permissions))
-        val claims = sut.verify(token.deflated(), TokenType.BEARER, mock())
+        val claims = sut.verify(token.deflated(), TokenType.BEARER)
 
         assertThat(claims["iss"]).isEqualTo("vaccineimpact.org")
         assertThat(claims["token_type"]).isEqualTo("BEARER")
@@ -66,7 +67,7 @@ class WebTokenHelperTests : MontaguTests()
     fun `can generate long-lived bearer token`()
     {
         val token = sut.generateToken(InternalUser(properties, roles, permissions), lifeSpan = Duration.ofDays(365))
-        val claims = sut.verify(token.deflated(), TokenType.BEARER, mock())
+        val claims = sut.verify(token.deflated(), TokenType.BEARER)
 
         assertThat(claims["exp"] as Date).isAfter(Date.from(Instant.now() + Duration.ofDays(364)))
     }
@@ -77,7 +78,7 @@ class WebTokenHelperTests : MontaguTests()
         val roles = listOf(ReifiedRole("member", Scope.Specific("modelling-group", "test-group")))
         val token = sut.generateModelReviewToken(InternalUser(properties.copy(username = "some.user"),
                 roles, permissions), listOf("d1"))
-        val claims = sut.verify(token.deflated(), TokenType.MODEL_REVIEW, mock())
+        val claims = sut.verify(token.deflated(), TokenType.MODEL_REVIEW)
 
         assertThat(claims["iss"]).isEqualTo("vaccineimpact.org")
         assertThat(claims["token_type"]).isEqualTo("MODEL_REVIEW")
@@ -94,7 +95,7 @@ class WebTokenHelperTests : MontaguTests()
     {
         val token = sut.generateModelReviewToken(InternalUser(properties,
                 roles + ReifiedRole("admin", Scope.Global()), permissions), listOf("d1"))
-        val claims = sut.verify(token.deflated(), TokenType.MODEL_REVIEW, mock())
+        val claims = sut.verify(token.deflated(), TokenType.MODEL_REVIEW)
 
         assertThat(claims["access_level"]).isEqualTo("admin")
     }
@@ -104,7 +105,7 @@ class WebTokenHelperTests : MontaguTests()
     {
         val token = sut.generateModelReviewToken(InternalUser(properties,
                 roles + ReifiedRole("developer", Scope.Global()), permissions), listOf("d1"))
-        val claims = sut.verify(token.deflated(), TokenType.MODEL_REVIEW, mock())
+        val claims = sut.verify(token.deflated(), TokenType.MODEL_REVIEW)
 
         assertThat(claims["access_level"]).isEqualTo("admin")
     }
@@ -116,7 +117,7 @@ class WebTokenHelperTests : MontaguTests()
         val badToken = sut.generator.generate(claims.plus("iss" to "unexpected.issuer"))
         val verifier = MontaguTokenAuthenticator(sut, TokenType.BEARER)
         assertThat(verifier.validateToken(badToken)).isNull()
-        assertThatThrownBy { sut.verify(badToken.deflated(), TokenType.BEARER, mock()) }
+        assertThatThrownBy { sut.verify(badToken.deflated(), TokenType.BEARER) }
     }
 
     @Test
@@ -126,7 +127,7 @@ class WebTokenHelperTests : MontaguTests()
         val badToken = sut.generator.generate(claims.plus("token_type" to "unexpected.type"))
         val verifier = MontaguTokenAuthenticator(sut, TokenType.BEARER)
         assertThat(verifier.validateToken(badToken)).isNull()
-        assertThatThrownBy { sut.verify(badToken.deflated(), TokenType.BEARER, mock()) }
+        assertThatThrownBy { sut.verify(badToken.deflated(), TokenType.BEARER) }
     }
 
     @Test
@@ -136,7 +137,7 @@ class WebTokenHelperTests : MontaguTests()
         val badToken = sut.generator.generate(claims.plus("exp" to Date.from(Instant.now())))
         val verifier = MontaguTokenAuthenticator(sut, TokenType.BEARER)
         assertThat(verifier.validateToken(badToken)).isNull()
-        assertThatThrownBy { sut.verify(badToken.deflated(), TokenType.BEARER, mock()) }
+        assertThatThrownBy { sut.verify(badToken.deflated(), TokenType.BEARER) }
     }
 
     @Test
@@ -146,7 +147,7 @@ class WebTokenHelperTests : MontaguTests()
         val evilToken = sauron.generateToken(InternalUser(properties, roles, permissions))
         val verifier = MontaguTokenAuthenticator(sut, TokenType.BEARER)
         assertThat(verifier.validateToken(evilToken)).isNull()
-        assertThatThrownBy { sut.verify(evilToken.deflated(), TokenType.BEARER, mock()) }
+        assertThatThrownBy { sut.verify(evilToken.deflated(), TokenType.BEARER) }
     }
 
     @Test
@@ -159,7 +160,7 @@ class WebTokenHelperTests : MontaguTests()
         }
 
         val token = sut.generateOnetimeActionToken("/some/url/", "username", permissions, roles)
-        val claims = sut.verify(token.deflated(), TokenType.ONETIME, mockTokenChecker)
+        val claims = sut.verifyOneTimeToken(token.deflated(), mockTokenChecker)
         assertThat(claims["iss"]).isEqualTo("vaccineimpact.org")
         assertThat(claims["token_type"]).isEqualTo("ONETIME")
         assertThat(claims["sub"]).isEqualTo("username")
@@ -177,7 +178,7 @@ class WebTokenHelperTests : MontaguTests()
             on { checkToken(any()) } doReturn false
         }
         val token = sut.generateOnetimeActionToken("/some/url/", "username", "", "")
-        assertThatThrownBy { sut.verify(token.deflated(), TokenType.ONETIME, mockTokenChecker) }
+        assertThatThrownBy { sut.verifyOneTimeToken(token.deflated(), mockTokenChecker) }
     }
 
     @Test
@@ -187,7 +188,7 @@ class WebTokenHelperTests : MontaguTests()
             on { checkToken(any()) } doReturn true
         }
         val token = sut.generateOnetimeActionToken("", "username", "", "")
-        assertThatThrownBy { sut.verify(token.deflated(), TokenType.ONETIME, mockTokenChecker) }
+        assertThatThrownBy { sut.verifyOneTimeToken(token.deflated(), mockTokenChecker) }
     }
 
     @Test
@@ -200,7 +201,7 @@ class WebTokenHelperTests : MontaguTests()
         createHelper(serializer)
         val result = Result(ResultStatus.SUCCESS, "OK", listOf())
         val token = sut.encodeResult(result)
-        val claims = sut.verify(token.deflated(), TokenType.API_RESPONSE, mock())
+        val claims = sut.verify(token.deflated(), TokenType.API_RESPONSE)
 
         assertThat(claims["token_type"]).isEqualTo("API_RESPONSE")
         assertThat(claims["sub"]).isEqualTo("api_response")
@@ -219,7 +220,7 @@ class WebTokenHelperTests : MontaguTests()
         val result = Result(ResultStatus.FAILURE, null,
                 listOf(ErrorInfo("some-code", "some message")))
         val token = sut.encodeResult(result)
-        val claims = sut.verify(token.deflated(), TokenType.API_RESPONSE, mock())
+        val claims = sut.verify(token.deflated(), TokenType.API_RESPONSE)
 
         assertThat(claims["token_type"]).isEqualTo("API_RESPONSE")
         assertThat(claims["sub"]).isEqualTo("api_response")

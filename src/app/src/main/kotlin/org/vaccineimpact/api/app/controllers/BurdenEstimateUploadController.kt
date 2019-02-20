@@ -16,6 +16,7 @@ import org.vaccineimpact.api.app.requests.PostDataHelper
 import org.vaccineimpact.api.app.requests.csvData
 import org.vaccineimpact.api.models.*
 import org.vaccineimpact.api.security.KeyHelper
+import org.vaccineimpact.api.security.TokenType
 import org.vaccineimpact.api.security.WebTokenHelper
 import org.vaccineimpact.api.serialization.DataTableDeserializer
 import org.vaccineimpact.api.serialization.MontaguSerializer
@@ -76,6 +77,19 @@ class BurdenEstimateUploadController(context: ActionContext,
         }
     }
 
+    fun getUploadToken(): String
+    {
+        val path = getValidResponsibilityPath(context, estimateRepository)
+
+        return tokenHelper.generateUploadEstimatesToken(
+                context.username!!,
+                path.groupId,
+                path.touchstoneVersionId,
+                path.scenarioId,
+                context.params(":set-id").toInt(),
+                context.params("fileName"))
+    }
+
     fun uploadBurdenEstimateFile(): String
     {
         val resumableChunkNumber = context.queryParams("resumableChunkNumber")?.toInt()
@@ -114,33 +128,41 @@ class BurdenEstimateUploadController(context: ActionContext,
 
     fun populateBurdenEstimateSetFromLocalFile(): String
     {
-        val uniqueIdentifier = context.queryParams("uid")
-                ?: throw BadRequest("Missing required parameter 'uid'")
-        val info = resumableInfoCache[uniqueIdentifier]
-                ?: throw BadRequest("Unrecognised uid")
+        val uploadToken = context.params(":token")
+        val path = UploadPath(tokenHelper.verify(uploadToken, TokenType.UPLOAD))
+
+        val info = resumableInfoCache[path.uniqueIdentifier]
+                ?: throw BadRequest("Unrecognised file identifier - has this token already been used?")
 
         return if (info.uploadFinished())
         {
-            // First check if we're allowed to see this touchstoneVersion
-            val path = getValidResponsibilityPath(context, estimateRepository)
-
-            // Next, get the metadata that will enable us to interpret the CSV
-            val setId = context.params(":set-id").toInt()
-
             // Stream estimates from file
             val data = DataTableDeserializer.deserialize(File(info.filePath).reader(),
                     BurdenEstimate::class, serializer).map {
                 BurdenEstimateWithRunId(it, runId = null)
             }
 
+            // Next, get the metadata that will enable us to interpret the CSV
+            val metadata = estimateRepository.getBurdenEstimateSet(path.groupId,
+                    path.touchstoneVersionId,
+                    path.scenarioId,
+                    path.setId)
+
+            if (metadata.isStochastic())
+            {
+                throw BadRequest("Stochastic estimate upload not supported")
+            }
+
             estimatesLogic.populateBurdenEstimateSet(
-                    setId,
-                    path.groupId, path.touchstoneVersionId, path.scenarioId,
+                    path.setId,
+                    path.groupId,
+                    path.touchstoneVersionId,
+                    path.scenarioId,
                     data
             )
 
             resumableInfoCache.remove(info.uniqueIdentifier)
-            estimatesLogic.closeBurdenEstimateSet(setId, path.groupId, path.touchstoneVersionId, path.scenarioId)
+            estimatesLogic.closeBurdenEstimateSet(path.setId, path.groupId, path.touchstoneVersionId, path.scenarioId)
 
             okayResponse()
         }
@@ -154,15 +176,27 @@ class BurdenEstimateUploadController(context: ActionContext,
     {
         val totalChunks = context.queryParams("resumableTotalChunks")?.toInt()
         val chunkSize = context.queryParams("resumableChunkSize")?.toLong()
-        val uniqueIdentifier = context.queryParams("resumableIdentifier")
+        val uploadToken = context.queryParams("resumableIdentifier")
         val filename = context.queryParams("resumableFilename")
 
-        if (totalChunks == null || chunkSize == null || uniqueIdentifier.isNullOrEmpty() || filename.isNullOrEmpty())
+        if (totalChunks == null || chunkSize == null || uploadToken.isNullOrEmpty() || filename.isNullOrEmpty())
         {
             throw BadRequest("You must include all resumablejs query parameters")
         }
 
-        val info = resumableInfoCache[uniqueIdentifier!!]
+        val claims = tokenHelper.verify(uploadToken!!, TokenType.UPLOAD)
+        if (claims["file-name"] != filename)
+        {
+            throw BadRequest("The given token has not been issued for the file $filename")
+        }
+        if (claims["sub"] != context.username!!)
+        {
+            throw BadRequest("The given token has not been issued for this user")
+        }
+
+        val uniqueIdentifier = claims["uid"].toString()
+
+        val info = resumableInfoCache[uniqueIdentifier]
         return if (info != null)
         {
             info
@@ -170,7 +204,7 @@ class BurdenEstimateUploadController(context: ActionContext,
         else
         {
             File(UPLOAD_DIR).mkdir()
-            val file = File(UPLOAD_DIR, filename)
+            val file = File(UPLOAD_DIR, uniqueIdentifier)
             resumableInfoCache.put(ResumableInfo(totalChunks, chunkSize, uniqueIdentifier, file))
             resumableInfoCache[uniqueIdentifier]!!
         }
@@ -198,5 +232,19 @@ class BurdenEstimateUploadController(context: ActionContext,
     companion object
     {
         const val UPLOAD_DIR = "upload_dir"
+    }
+
+    data class UploadPath(val uniqueIdentifier: String,
+                          val groupId: String,
+                          val touchstoneVersionId: String,
+                          val scenarioId: String,
+                          val setId: Int)
+    {
+        constructor(claims: Map<String, Any>) : this(
+                claims["uid"].toString(),
+                claims["group-id"].toString(),
+                claims["touchstone-id"].toString(),
+                claims["scenario-id"].toString(),
+                claims["set-id"].toString().toInt())
     }
 }

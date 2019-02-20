@@ -18,6 +18,9 @@ import org.vaccineimpact.api.app.repositories.Repositories
 import org.vaccineimpact.api.app.repositories.SimpleDataSet
 import org.vaccineimpact.api.app.requests.PostDataHelper
 import org.vaccineimpact.api.models.*
+import org.vaccineimpact.api.security.TokenType
+import org.vaccineimpact.api.security.TokenValidationException
+import org.vaccineimpact.api.security.WebTokenHelper
 import org.vaccineimpact.api.tests.mocks.mockCSVPostData
 import java.io.File
 
@@ -37,7 +40,7 @@ class UploadBurdenEstimatesControllerTests : BurdenEstimateControllerTestsBase()
                 )),
                 BurdenEstimateWithRunId("yf", null, 1980, 30, "AGO", "Angola", 2000F, mapOf(
                         "deaths" to 20F,
-                        "dalys" to 73.6F
+                        "cases" to 73.6F
                 ))
         )
 
@@ -114,7 +117,6 @@ class UploadBurdenEstimatesControllerTests : BurdenEstimateControllerTestsBase()
         Assertions.assertThat(result.status).isEqualTo(ResultStatus.FAILURE)
     }
 
-
     @Test
     fun `can populate central estimate set from local file`()
     {
@@ -122,61 +124,157 @@ class UploadBurdenEstimatesControllerTests : BurdenEstimateControllerTestsBase()
         val logic = mockLogic()
 
         val file = File("test.csv")
-        val tempFile = createTempCSVFile("test.csv")
+        createTempCSVFile("test.csv")
 
-        val mockContext = mockPopulateFromLocalFileActionContext()
+        val mockContext = mockPopulateFromLocalFileActionContext("user.name")
         val repo = mockEstimatesRepository(touchstoneSet)
         val cache = makeFakeCacheWithResumableInfo("uid", file, uploadFinished = true)
+        val mockTokenHelper = getMockTokenHelper("user.name", "uid")
 
-        val sut = BurdenEstimateUploadController(mockContext, mock(), logic, repo, resumableInfoCache = cache)
+        val sut = BurdenEstimateUploadController(mockContext, mock(), logic, repo, mock(), mockTokenHelper, cache)
 
         val result = sut.populateBurdenEstimateSetFromLocalFile()
+
         assertThat(result).isEqualTo("OK")
+        verify(logic).populateBurdenEstimateSet(eq(1), eq("g1"), eq("t1"), eq("s1"), any())
+        verify(logic).closeBurdenEstimateSet(eq(1), eq("g1"), eq("t1"), eq("s1"))
+    }
 
-        verify(touchstoneSet).get("touchstone-1")
-        verify(logic).populateBurdenEstimateSet(eq(1), eq("group-1"), eq("touchstone-1"), eq("scenario-1"), any())
-        verify(logic).closeBurdenEstimateSet(eq(1), eq("group-1"), eq("touchstone-1"), eq("scenario-1"))
+    @Test
+    fun `populating central estimate set from local file deletes file and clears cache item on success`()
+    {
+        val touchstoneSet = mockTouchstones()
+        val logic = mockLogic()
 
+        val file = File("test.csv")
+        val tempFile = createTempCSVFile("test.csv")
+
+        val mockContext = mockPopulateFromLocalFileActionContext("user.name")
+        val repo = mockEstimatesRepository(touchstoneSet)
+        val cache = makeFakeCacheWithResumableInfo("uid", file, uploadFinished = true)
+        val mockTokenHelper = getMockTokenHelper("user.name", "uid")
+
+        val sut = BurdenEstimateUploadController(mockContext, mock(), logic, repo, mock(), mockTokenHelper, cache)
+
+        val result = sut.populateBurdenEstimateSetFromLocalFile()
+
+        assertThat(result).isEqualTo("OK")
         assertThat(cache["uid"]).isNull()
         assertThat(tempFile.exists()).isFalse()
         assertThat(file.exists()).isFalse()
     }
 
     @Test
-    fun `populating set from local file requires uid`()
-    {
-        val mockContext = mockActionContext()
-        val sut = BurdenEstimateUploadController(mockContext, mock(), mock(), mock(), mock())
-
-        assertThatThrownBy { sut.populateBurdenEstimateSetFromLocalFile() }
-                .isInstanceOf(BadRequest::class.java)
-                .hasMessageContaining("Missing required parameter 'uid'")
-
-    }
-
-    @Test
     fun `populating set from local file throws error if uid not recognised`()
     {
-        val mockContext = mockPopulateFromLocalFileActionContext()
-        val sut = BurdenEstimateUploadController(mockContext, mock(), mock(), mock(), mock())
+        val mockContext = mockPopulateFromLocalFileActionContext("user.name")
+        val mockTokenHelper = getMockTokenHelper("user.name", "uid")
+
+        val sut = BurdenEstimateUploadController(mockContext, mock(), mock(), mock(), mock(), mockTokenHelper, mock())
 
         assertThatThrownBy { sut.populateBurdenEstimateSetFromLocalFile() }
                 .isInstanceOf(BadRequest::class.java)
-                .hasMessageContaining("Unrecognised uid")
+                .hasMessageContaining("Unrecognised file identifier - has this token already been used?")
 
     }
 
     @Test
     fun `populating set from local file requires file to be fully uploaded`()
     {
-        val mockContext = mockPopulateFromLocalFileActionContext()
+        val mockContext = mockPopulateFromLocalFileActionContext("user.name")
+        val mockTokenHelper = getMockTokenHelper("user.name", "uid")
         val fakeCache = makeFakeCacheWithResumableInfo("uid", File("file.csv"), uploadFinished = false)
-        val sut = BurdenEstimateUploadController(mockContext, mock(), mock(), mock(), mock(), mock(), fakeCache)
+
+        val sut = BurdenEstimateUploadController(mockContext, mock(), mock(), mock(), mock(), mockTokenHelper, fakeCache)
 
         assertThatThrownBy { sut.populateBurdenEstimateSetFromLocalFile() }
                 .isInstanceOf(BadRequest::class.java)
                 .hasMessageContaining("This file has not been fully uploaded")
 
+    }
+
+    @Test
+    fun `populating set from local file requires token to be validated`()
+    {
+        val mockContext = mockPopulateFromLocalFileActionContext("user.name")
+        val fakeCache = makeFakeCacheWithResumableInfo("uid", File("file.csv"), uploadFinished = true)
+
+        val sut = BurdenEstimateUploadController(mockContext, mock(), mock(), mock(), mock(), resumableInfoCache = fakeCache)
+
+        assertThatThrownBy { sut.populateBurdenEstimateSetFromLocalFile() }
+                .isInstanceOf(TokenValidationException::class.java)
+                .hasMessageContaining("Could not verify token")
+
+    }
+
+    @Test
+    fun `uploading file requires token to be validated`()
+    {
+        val mockContext = mockResumableUploadActionContext("uid")
+        val fakeCache = makeFakeCacheWithResumableInfo("uid", File("file.csv"), uploadFinished = true)
+        val sut = BurdenEstimateUploadController(mockContext, mock(), mock(), mock(), mock(), resumableInfoCache = fakeCache)
+
+        assertThatThrownBy { sut.uploadBurdenEstimateFile() }
+                .isInstanceOf(TokenValidationException::class.java)
+                .hasMessageContaining("Could not verify token")
+
+    }
+
+    @Test
+    fun `uploading file requires resumable query params`()
+    {
+        val mockContext = mockPopulateFromLocalFileActionContext("user.name")
+        val fakeCache = makeFakeCacheWithResumableInfo("uid", File("file.csv"), uploadFinished = true)
+        val sut = BurdenEstimateUploadController(mockContext, mock(), mock(), mock(), mock(), resumableInfoCache = fakeCache)
+
+        assertThatThrownBy { sut.uploadBurdenEstimateFile() }
+                .isInstanceOf(BadRequest::class.java)
+                .hasMessageContaining("Missing required query parameter: resumableChunkNumber")
+
+    }
+
+    @Test
+    fun `uploading file requires token username to match the current username`()
+    {
+        val mockContext = mockResumableUploadActionContext("uid", "file.csv", "wrong.name")
+        val mockTokenHelper = getMockTokenHelper("user.name", "uid", "file.csv")
+        val fakeCache = makeFakeCacheWithResumableInfo("uid", File("file.csv"), uploadFinished = true)
+        val sut = BurdenEstimateUploadController(mockContext, mock(), mock(), mock(), mock(), mockTokenHelper, fakeCache)
+
+        assertThatThrownBy { sut.uploadBurdenEstimateFile() }
+                .isInstanceOf(BadRequest::class.java)
+                .hasMessageContaining("The given token has not been issued for this user")
+
+    }
+
+    @Test
+    fun `uploading file requires token filename to match the given filename`()
+    {
+        val mockContext = mockResumableUploadActionContext("uid", "wrong.file", "user.name")
+        val mockTokenHelper = getMockTokenHelper("user.name", "uid", "file.csv")
+        val fakeCache = makeFakeCacheWithResumableInfo("uid", File("file.csv"), uploadFinished = true)
+        val sut = BurdenEstimateUploadController(mockContext, mock(), mock(), mock(), mock(), mockTokenHelper, fakeCache)
+
+        assertThatThrownBy { sut.uploadBurdenEstimateFile() }
+                .isInstanceOf(BadRequest::class.java)
+                .hasMessageContaining("The given token has not been issued for the file wrong.file")
+
+    }
+
+    private fun getMockTokenHelper(username: String, uid: String, filename: String = "file.csv"): WebTokenHelper
+    {
+        return mock {
+            on { verify(any(), eq(TokenType.UPLOAD)) } doReturn
+                    mapOf(
+                            "sub" to username,
+                            "file-name" to filename,
+                            "group-id" to "g1",
+                            "scenario-id" to "s1",
+                            "touchstone-id" to "t1",
+                            "fileName" to "test.csv",
+                            "set-id" to 1,
+                            "uid" to uid)
+        }
     }
 
     private fun createTempCSVFile(fileName: String): File
@@ -226,26 +324,29 @@ class UploadBurdenEstimatesControllerTests : BurdenEstimateControllerTestsBase()
         }
     }
 
-    private fun mockPopulateFromLocalFileActionContext(): ActionContext
+    private fun mockPopulateFromLocalFileActionContext(user: String): ActionContext
     {
         return mock {
-            on { username } doReturn "username"
+            on { username } doReturn user
             on { params(":set-id") } doReturn "1"
             on { params(":group-id") } doReturn "group-1"
             on { params(":touchstone-version-id") } doReturn "touchstone-1"
             on { params(":scenario-id") } doReturn "scenario-1"
-            on { queryParams("uid") } doReturn "uid"
+            on { params(":token") } doReturn "faketoken"
         }
     }
 
-    private fun mockResumableUploadActionContext(): ActionContext
+    private fun mockResumableUploadActionContext(uniqueIdentifier: String,
+                                                 fileName: String = "filename.csv",
+                                                 user: String = "user.name"): ActionContext
     {
         return mock {
-            on { username } doReturn "username"
-            on { params(":set-id") } doReturn "1"
-            on { params(":group-id") } doReturn "group-1"
-            on { params(":touchstone-version-id") } doReturn "touchstone-1"
-            on { params(":scenario-id") } doReturn "scenario-1"
+            on { username } doReturn user
+            on { queryParams("resumableTotalChunks") } doReturn "10"
+            on { queryParams("resumableChunkSize") } doReturn "100"
+            on { queryParams("resumableChunkNumber") } doReturn "1"
+            on { queryParams("resumableIdentifier") } doReturn uniqueIdentifier
+            on { queryParams("resumableFilename") } doReturn fileName
         }
     }
 

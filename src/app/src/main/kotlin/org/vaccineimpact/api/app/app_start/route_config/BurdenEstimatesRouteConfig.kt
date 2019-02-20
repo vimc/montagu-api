@@ -40,11 +40,15 @@ object BurdenEstimatesRouteConfig : RouteConfig
                     .json()
                     .secure(writePermissions),
 
-            Endpoint("$baseUrl/:set-id/actions/upload/", uploadController, "uploadBurdenEstimateFile", method = HttpMethod.post)
+            Endpoint("$baseUrl/:set-id/actions/request-upload/", uploadController, "getUploadToken", method = HttpMethod.get)
                     .json()
                     .secure(writePermissions),
 
-            Endpoint("$baseUrl/:set-id/actions/populate/", uploadController, "populateBurdenEstimateSetFromLocalFile", method = HttpMethod.post)
+            Endpoint("burden-estimates/:set-id/actions/upload/:token/", uploadController, "uploadBurdenEstimateFile", method = HttpMethod.post)
+                    .json()
+                    .secure(writePermissions),
+
+            Endpoint("burden-estimates/:set-id/actions/populate/:token/", uploadController, "populateBurdenEstimateSetFromLocalFile", method = HttpMethod.post)
                     .json()
                     .secure(writePermissions),
 

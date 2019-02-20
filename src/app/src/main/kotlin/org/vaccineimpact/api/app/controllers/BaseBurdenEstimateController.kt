@@ -46,4 +46,15 @@ abstract class BaseBurdenEstimateController(context: ActionContext,
         return path
     }
 
+    protected fun getValidResponsibilityPath(
+            claims: Map<String, Any>,
+            estimateRepository: BurdenEstimateRepository,
+            readEstimatesRequired: Boolean = false
+    ): ResponsibilityPath
+    {
+        val path = ResponsibilityPath(context)
+        context.checkEstimatePermissionsForTouchstoneVersion(path.groupId, path.touchstoneVersionId, estimateRepository, readEstimatesRequired)
+        return path
+    }
+
 }
