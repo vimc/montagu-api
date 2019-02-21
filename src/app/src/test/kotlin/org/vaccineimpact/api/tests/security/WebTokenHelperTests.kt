@@ -119,6 +119,7 @@ class WebTokenHelperTests : MontaguTests()
         val verifier = MontaguTokenAuthenticator(sut, TokenType.BEARER)
         assertThat(verifier.validateToken(badToken)).isNull()
         assertThatThrownBy { sut.verify(badToken.deflated(), TokenType.BEARER) }
+   .isInstanceOf(TokenValidationException::class.java)
     }
 
     @Test
@@ -129,6 +130,7 @@ class WebTokenHelperTests : MontaguTests()
         val verifier = MontaguTokenAuthenticator(sut, TokenType.BEARER)
         assertThat(verifier.validateToken(badToken)).isNull()
         assertThatThrownBy { sut.verify(badToken.deflated(), TokenType.BEARER) }
+                .isInstanceOf(TokenValidationException::class.java)
     }
 
     @Test
@@ -139,6 +141,7 @@ class WebTokenHelperTests : MontaguTests()
         val verifier = MontaguTokenAuthenticator(sut, TokenType.BEARER)
         assertThat(verifier.validateToken(badToken)).isNull()
         assertThatThrownBy { sut.verify(badToken.deflated(), TokenType.BEARER) }
+                .isInstanceOf(TokenValidationException::class.java)
     }
 
     @Test
@@ -149,6 +152,7 @@ class WebTokenHelperTests : MontaguTests()
         val verifier = MontaguTokenAuthenticator(sut, TokenType.BEARER)
         assertThat(verifier.validateToken(evilToken)).isNull()
         assertThatThrownBy { sut.verify(evilToken.deflated(), TokenType.BEARER) }
+                .isInstanceOf(TokenValidationException::class.java)
     }
 
     @Test
@@ -193,6 +197,14 @@ class WebTokenHelperTests : MontaguTests()
     }
 
     @Test
+    fun `verifying a onetime token with the wrong method throws an exception`()
+    {
+        val token = sut.generateOnetimeActionToken("/some/url/", "username", "", "")
+        assertThatThrownBy { sut.verify(token.deflated(), TokenType.ONETIME) }
+                .isInstanceOf(UnsupportedOperationException::class.java)
+    }
+
+    @Test
     fun `can encode result token`()
     {
         val serializer = mock<Serializer> {
@@ -234,7 +246,7 @@ class WebTokenHelperTests : MontaguTests()
     {
         val sut = WebTokenHelper(KeyHelper.generateKeyPair())
         val now = Instant.now()
-        val result = sut.generateUploadEstimatesToken("user.name", "g1", "t1", "s1", 3, "file.csv")
+        val result = sut.generateUploadEstimatesToken("user.name", "g1", "t1", "s1", 3)
         val claims = sut.verify(result, TokenType.UPLOAD)
 
         assertThat(claims["sub"]).isEqualTo("user.name")
@@ -244,6 +256,10 @@ class WebTokenHelperTests : MontaguTests()
         assertThat(claims["scenario-id"]).isEqualTo("s1")
         assertThat(claims["set-id"].toString()).isEqualTo("3")
         assertThat(claims["token_type"]).isEqualTo("UPLOAD")
+
+        val expiry = (claims["exp"] as Date)
+        assertThat(expiry).isAfter(Date.from(now))
+        assertThat(expiry).isBefore(Date.from(Instant.now().plus(Duration.ofDays(1))))
 
         val uid = claims["uid"].toString()
         val timestamp = Instant.parse(uid.split("-").takeLast(3).joinToString("-"))

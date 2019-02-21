@@ -7,6 +7,7 @@ import org.vaccineimpact.api.app.asResult
 import org.vaccineimpact.api.app.context.ActionContext
 import org.vaccineimpact.api.app.context.RequestDataSource
 import org.vaccineimpact.api.app.errors.BadRequest
+import org.vaccineimpact.api.app.errors.InvalidOperationError
 import org.vaccineimpact.api.app.logic.BurdenEstimateLogic
 import org.vaccineimpact.api.app.logic.RepositoriesBurdenEstimateLogic
 import org.vaccineimpact.api.app.models.ResumableInfo
@@ -39,6 +40,30 @@ class BurdenEstimateUploadController(context: ActionContext,
             repos,
             RepositoriesBurdenEstimateLogic(repos.modellingGroup, repos.burdenEstimates, repos.expectations),
             repos.burdenEstimates)
+
+    fun getUploadToken(): String
+    {
+        val path = getValidResponsibilityPath(context, estimateRepository)
+        val setId = context.params(":set-id").toInt()
+
+        // Check that this is a central estimate set
+        val metadata = estimateRepository.getBurdenEstimateSet(path.groupId,
+                path.touchstoneVersionId,
+                path.scenarioId,
+                setId)
+
+        if (metadata.isStochastic())
+        {
+            throw InvalidOperationError("Stochastic estimate upload not supported")
+        }
+
+        return tokenHelper.generateUploadEstimatesToken(
+                context.username!!,
+                path.groupId,
+                path.touchstoneVersionId,
+                path.scenarioId,
+                setId)
+    }
 
     fun populateBurdenEstimateSet() = populateBurdenEstimateSet(RequestDataSource.fromContentType(context))
     fun populateBurdenEstimateSet(source: RequestDataSource): Result
@@ -75,31 +100,6 @@ class BurdenEstimateUploadController(context: ActionContext,
                 okayResponse().asResult()
             }
         }
-    }
-
-    fun getUploadToken(): String
-    {
-        val path = getValidResponsibilityPath(context, estimateRepository)
-        val setId = context.params(":set-id").toInt()
-
-        // Check that this is a central estimate set
-        val metadata = estimateRepository.getBurdenEstimateSet(path.groupId,
-                path.touchstoneVersionId,
-                path.scenarioId,
-                setId)
-
-        if (metadata.isStochastic())
-        {
-            throw BadRequest("Stochastic estimate upload not supported")
-        }
-
-        return tokenHelper.generateUploadEstimatesToken(
-                context.username!!,
-                path.groupId,
-                path.touchstoneVersionId,
-                path.scenarioId,
-                setId,
-                context.params(":file-name"))
     }
 
     fun uploadBurdenEstimateFile(): String

@@ -25,12 +25,6 @@ class TokenFetcher
         }
     }
 
-    fun getUploadToken(setUrl: String, fileName: String, token: TokenLiteral) : String {
-        val response = RequestHelper().get("$setUrl/actions/request-upload/$fileName/", token = token)
-        val json = com.beust.klaxon.Parser().parse(StringBuilder(response.text)) as com.beust.klaxon.JsonObject
-        return json["data"] as String
-    }
-
     sealed class TokenResponse
     {
         class Token(val token: TokenLiteral): TokenResponse()

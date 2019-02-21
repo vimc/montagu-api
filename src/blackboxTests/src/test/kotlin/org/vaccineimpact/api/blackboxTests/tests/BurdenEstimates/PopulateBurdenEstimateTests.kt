@@ -1,6 +1,7 @@
 package org.vaccineimpact.api.blackboxTests.tests.BurdenEstimates
 
 import khttp.responses.Response
+import com.github.fge.jsonschema.main.JsonValidator
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.vaccineimpact.api.blackboxTests.helpers.*
@@ -252,10 +253,11 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
         val setId = JooqContext().use {
             setUpWithBurdenEstimateSet(it)
         }
+
         val fileName = "test.csv"
 
         val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
-        val uploadToken = TokenFetcher().getUploadToken("$setUrl$setId", fileName, token)
+        val uploadToken = getUploadToken("$setUrl$setId", token)
 
         val queryParams = mapOf("resumableChunkNumber" to 1,
                 "resumableChunkSize" to 1048576,
@@ -285,9 +287,9 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
         val setId = JooqContext().use {
             setUpWithBurdenEstimateSet(it, yearMinInclusive = 1996, yearMaxInclusive = 1999)
         }
-        val fileName = "test.csv"
+
         val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
-        val uploadToken = TokenFetcher().getUploadToken("$setUrl$setId", fileName, token)
+        val uploadToken = getUploadToken("$setUrl$setId", token)
         val chunkSize = 100
         val data = longCsvData.chunked(chunkSize)
         val numChunks = data.count()
@@ -316,14 +318,13 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
         val setId = JooqContext().use {
             setUpWithBurdenEstimateSet(it)
         }
-        val fileName = "test.csv"
         val chunkSize = 100
         val data = longCsvData.chunked(chunkSize)
         val numChunks = data.count()
 
         val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
 
-        val uploadToken = TokenFetcher().getUploadToken("$setUrl$setId", fileName, token)
+        val uploadToken = getUploadToken("$setUrl$setId", token)
         var response = sendChunk(setId, 1, data[0], numChunks, uploadToken, token)
         JSONValidator().validateSuccess(response.text)
 
@@ -360,7 +361,7 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
         }
 
         val token = TestUserHelper.setupTestUserAndGetToken(requiredWritePermissions, includeCanLogin = true)
-        val uploadToken = TokenFetcher().getUploadToken("$setUrl$setId", "test.csv", token)
+        val uploadToken = getUploadToken("$setUrl$setId", token)
 
         val chunkSize = 100
         val data = longCsvData.chunked(chunkSize)
@@ -406,6 +407,12 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
         val response = RequestHelper().postFile("$setUrl$setId/actions/upload/$token/?$queryParams", chunk, token = token)
         JSONValidator().validateSuccess(response.text)
         return response
+    }
+
+    private fun getUploadToken(setUrl: String, token: TokenLiteral) : String {
+        val response = RequestHelper().get("$setUrl/actions/request-upload/", token = token)
+        val json = com.beust.klaxon.Parser().parse(StringBuilder(response.text)) as com.beust.klaxon.JsonObject
+        return json["data"] as String
     }
 
 

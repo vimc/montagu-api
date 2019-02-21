@@ -1,7 +1,6 @@
 package org.vaccineimpact.api.tests.controllers.BurdenEstimates
 
 import com.nhaarman.mockito_kotlin.*
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
@@ -10,6 +9,7 @@ import org.vaccineimpact.api.app.ResumableInfoCache
 import org.vaccineimpact.api.app.context.ActionContext
 import org.vaccineimpact.api.app.controllers.BurdenEstimates.BurdenEstimateUploadController
 import org.vaccineimpact.api.app.errors.BadRequest
+import org.vaccineimpact.api.app.errors.InvalidOperationError
 import org.vaccineimpact.api.app.errors.MissingRowsError
 import org.vaccineimpact.api.app.logic.BurdenEstimateLogic
 import org.vaccineimpact.api.app.models.ResumableInfo
@@ -26,6 +26,41 @@ import java.io.File
 
 class UploadBurdenEstimatesControllerTests : BurdenEstimateControllerTestsBase()
 {
+    @Test
+    fun `can get upload token`()
+    {
+        val mockTokenHelper = mock<WebTokenHelper> {
+            on { generateUploadEstimatesToken("username", "group-1", "touchstone-1", "scenario-1", 1) } doReturn "TOKEN"
+        }
+
+        val repo = mockEstimatesRepository(mockTouchstones())
+        val sut = BurdenEstimateUploadController(mockActionContext(), mock(), mockLogic(),
+                repo, mock(),
+                mockTokenHelper)
+        val result = sut.getUploadToken()
+        verify(repo).getBurdenEstimateSet("group-1", "touchstone-1", "scenario-1", 1)
+        assertThat(result).isEqualTo("TOKEN")
+    }
+
+
+    @Test
+    fun `can not get upload token for stochastic set`()
+    {
+        val mockTokenHelper = mock<WebTokenHelper> {
+            on { generateUploadEstimatesToken("username", "group-1", "touchstone-1", "scenario-1", 1) } doReturn "TOKEN"
+        }
+
+        val repo = mockEstimatesRepository(mockTouchstones(), existingBurdenEstimateSet = defaultEstimateSet.copy(
+                type = BurdenEstimateSetType(BurdenEstimateSetTypeCode.STOCHASTIC)))
+
+        val sut = BurdenEstimateUploadController(mockActionContext(), mock(), mockLogic(),
+                repo, mock(),
+                mockTokenHelper)
+        assertThatThrownBy { sut.getUploadToken() }
+                .isInstanceOf(InvalidOperationError::class.java)
+                .hasMessageContaining("Stochastic estimate upload not supported")
+
+    }
 
     @Test
     fun `can populate central estimate set`()
@@ -114,41 +149,7 @@ class UploadBurdenEstimatesControllerTests : BurdenEstimateControllerTestsBase()
         val mockPostData = mockCSVPostData(normalCSVData)
         val result = BurdenEstimateUploadController(mockContext, mockRepositories(repo), logic, repo,
                 postDataHelper = mockPostData).populateBurdenEstimateSet()
-        Assertions.assertThat(result.status).isEqualTo(ResultStatus.FAILURE)
-    }
-
-    @Test
-    fun `can get upload token`()
-    {
-        val mockTokenHelper = mock<WebTokenHelper> {
-            on { generateUploadEstimatesToken("username", "group-1", "touchstone-1", "scenario-1", 1, "file.csv") } doReturn "TOKEN"
-        }
-
-        val sut = BurdenEstimateUploadController(mockActionContext(), mock(), mockLogic(),
-                mockEstimatesRepository(mockTouchstones()), mock(),
-                mockTokenHelper, mock())
-        val result = sut.getUploadToken()
-        assertThat(result).isEqualTo("TOKEN")
-    }
-
-
-    @Test
-    fun `can not get upload token for stochastic set`()
-    {
-        val mockTokenHelper = mock<WebTokenHelper> {
-            on { generateUploadEstimatesToken("username", "group-1", "touchstone-1", "scenario-1", 1, "file.csv") } doReturn "TOKEN"
-        }
-
-        val repo = mockEstimatesRepository(mockTouchstones(), existingBurdenEstimateSet = defaultEstimateSet.copy(
-                type = BurdenEstimateSetType(BurdenEstimateSetTypeCode.STOCHASTIC)))
-
-        val sut = BurdenEstimateUploadController(mockActionContext(), mock(), mockLogic(),
-                repo, mock(),
-                mockTokenHelper, mock())
-        assertThatThrownBy { sut.getUploadToken() }
-                .isInstanceOf(BadRequest::class.java)
-                .hasMessageContaining("Stochastic estimate upload not supported")
-
+        assertThat(result.status).isEqualTo(ResultStatus.FAILURE)
     }
 
     @Test
@@ -349,6 +350,7 @@ class UploadBurdenEstimatesControllerTests : BurdenEstimateControllerTestsBase()
         return mock {
             on { username } doReturn "username"
             on { contentType() } doReturn "text/csv"
+            on { params(":file-name") } doReturn "file.csv"
             on { params(":set-id") } doReturn "1"
             on { params(":file-name") } doReturn "file.csv"
             on { params(":group-id") } doReturn "group-1"
