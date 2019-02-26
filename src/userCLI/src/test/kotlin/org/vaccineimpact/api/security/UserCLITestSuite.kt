@@ -4,10 +4,7 @@ import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.runner.RunWith
 import org.junit.runners.Suite
-import org.vaccineimpact.api.security.tests.AddUserToGroupOptionsTests
-import org.vaccineimpact.api.security.tests.AddUserToGroupTests
-import org.vaccineimpact.api.security.tests.GroupsTests
-import org.vaccineimpact.api.security.tests.QuestionTests
+import org.vaccineimpact.api.security.tests.*
 import org.vaccineimpact.api.test_helpers.DatabaseCreationHelper
 
 // Keep these sorted alphabetically, for consistency
@@ -15,6 +12,7 @@ import org.vaccineimpact.api.test_helpers.DatabaseCreationHelper
 @Suite.SuiteClasses(
         AddUserToGroupOptionsTests::class,
         AddUserToGroupTests::class,
+        AddRolesToUserTests::class,
         GroupsTests::class,
         QuestionTests::class
 )
