@@ -14,6 +14,7 @@ fun main(args: Array<String>)
             Action.addRole -> addRole(remainder)
             Action.addUserToGroup -> addToGroup(remainder)
             Action.sendTestEmail -> sendTestEmail(remainder)
+            Action.addAllGlobalRoles -> addAllGlobalRoles(remainder)
         }
     }
     catch (e: ActionException)

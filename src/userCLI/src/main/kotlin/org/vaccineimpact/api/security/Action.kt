@@ -4,6 +4,7 @@ enum class Action
 {
     add,
     addRole,
+    addAllGlobalRoles,
     addUserToGroup,
     sendTestEmail
 }
