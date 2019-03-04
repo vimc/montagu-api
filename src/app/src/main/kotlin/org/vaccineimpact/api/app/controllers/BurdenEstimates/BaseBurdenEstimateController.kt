@@ -7,11 +7,7 @@ import org.vaccineimpact.api.app.controllers.helpers.ResponsibilityPath
 import org.vaccineimpact.api.app.errors.MissingRowsError
 import org.vaccineimpact.api.app.logic.BurdenEstimateLogic
 import org.vaccineimpact.api.app.logic.RepositoriesBurdenEstimateLogic
-import org.vaccineimpact.api.app.repositories.BurdenEstimateRepository
-import org.vaccineimpact.api.app.repositories.ModellingGroupRepository
 import org.vaccineimpact.api.app.repositories.Repositories
-import org.vaccineimpact.api.app.repositories.ScenarioRepository
-import org.vaccineimpact.api.app.security.checkEstimatePermissionsForTouchstoneVersion
 import org.vaccineimpact.api.app.security.getAllowableTouchstoneStatusList
 import org.vaccineimpact.api.models.Result
 

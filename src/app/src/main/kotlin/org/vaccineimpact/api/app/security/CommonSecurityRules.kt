@@ -43,25 +43,3 @@ fun ActionContext.getAllowableTouchstoneStatusList(): List<TouchstoneStatus>
     }
     return result
 }
-
-fun ActionContext.checkEstimatePermissionsForTouchstoneVersion(
-        groupId: String,
-        touchstoneVersionId: String,
-        estimateRepository: BurdenEstimateRepository,
-        readEstimatesRequired: Boolean = false
-)
-{
-    val versions = estimateRepository.touchstoneRepository.touchstoneVersions
-    val touchstoneVersion = versions.get(touchstoneVersionId)
-    this.checkIsAllowedToSeeTouchstone(touchstoneVersionId, touchstoneVersion.status)
-    if (readEstimatesRequired)
-    {
-        if (touchstoneVersion.status == TouchstoneStatus.OPEN)
-        {
-            this.requirePermission(ReifiedPermission(
-                    "estimates.read-unfinished",
-                    Scope.Specific("modelling-group", groupId)
-            ))
-        }
-    }
-}

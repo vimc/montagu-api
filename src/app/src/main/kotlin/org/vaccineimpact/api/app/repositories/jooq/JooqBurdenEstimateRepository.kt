@@ -2,7 +2,6 @@ package org.vaccineimpact.api.app.repositories.jooq
 
 import org.jooq.DSLContext
 import org.jooq.JoinType
-import org.jooq.impl.DSL.inline
 import org.jooq.impl.DSL.sum
 import org.vaccineimpact.api.app.errors.BadRequest
 import org.vaccineimpact.api.app.errors.DatabaseContentsError
@@ -17,19 +16,18 @@ import org.vaccineimpact.api.app.repositories.burdenestimates.BurdenEstimateWrit
 import org.vaccineimpact.api.app.repositories.burdenestimates.CentralBurdenEstimateWriter
 import org.vaccineimpact.api.app.repositories.burdenestimates.StochasticBurdenEstimateWriter
 import org.vaccineimpact.api.app.repositories.jooq.mapping.BurdenMappingHelper
+import org.vaccineimpact.api.db.Tables
 import org.vaccineimpact.api.db.Tables.*
+import org.vaccineimpact.api.db.fetchSequence
 import org.vaccineimpact.api.db.fromJoinPath
 import org.vaccineimpact.api.db.joinPath
+import org.vaccineimpact.api.db.tables.records.BurdenEstimateRecord
 import org.vaccineimpact.api.models.*
 import org.vaccineimpact.api.models.responsibilities.ResponsibilitySetStatus
 import org.vaccineimpact.api.serialization.FlexibleDataTable
 import java.beans.ConstructorProperties
 import java.sql.Timestamp
 import java.time.Instant
-import org.vaccineimpact.api.db.Tables
-import org.vaccineimpact.api.db.fetchSequence
-import org.vaccineimpact.api.db.tables.records.BurdenEstimateRecord
-import java.lang.reflect.Type
 
 data class ResponsibilityInfo
 @ConstructorProperties("id", "disease", "status", "setId")
@@ -37,8 +35,6 @@ constructor(val id: Int, val disease: String, val setStatus: String, val setId: 
 
 class JooqBurdenEstimateRepository(
         dsl: DSLContext,
-        private val scenarioRepository: ScenarioRepository,
-        override val touchstoneRepository: TouchstoneRepository,
         private val modellingGroupRepository: ModellingGroupRepository,
         private val mapper: BurdenMappingHelper = BurdenMappingHelper(),
         centralBurdenEstimateWriter: CentralBurdenEstimateWriter? = null,
@@ -144,7 +140,7 @@ class JooqBurdenEstimateRepository(
     {
         //Check that the parameter set exists and belongs to the specified group and touchstone
         getModelRunParameterSets(groupId, touchstoneVersionId)
-                .filter{ s -> s.id == modelRunParameterSetId }
+                .filter { s -> s.id == modelRunParameterSetId }
                 .firstOrNull() ?: throw UnknownObjectError(modelRunParameterSetId, ModelRunParameterSet::class)
     }
 
@@ -175,14 +171,14 @@ class JooqBurdenEstimateRepository(
     {
         val table = BURDEN_ESTIMATE_SET
         val records = dsl.select(
-                    table.ID,
-                    table.UPLOADED_ON,
-                    table.UPLOADED_BY,
-                    table.SET_TYPE,
-                    table.SET_TYPE_DETAILS,
-                    table.STATUS,
-                    BURDEN_ESTIMATE_SET_PROBLEM.PROBLEM
-                 )
+                table.ID,
+                table.UPLOADED_ON,
+                table.UPLOADED_BY,
+                table.SET_TYPE,
+                table.SET_TYPE_DETAILS,
+                table.STATUS,
+                BURDEN_ESTIMATE_SET_PROBLEM.PROBLEM
+        )
                 .from(table)
                 .join(RESPONSIBILITY)
                 .on(RESPONSIBILITY.ID.eq(table.RESPONSIBILITY))
@@ -195,8 +191,8 @@ class JooqBurdenEstimateRepository(
                 .and(SCENARIO_DESCRIPTION.ID.eq(scenarioId))
                 .fetch()
 
-         return mapper.mapBurdenEstimateSets(records).singleOrNull()
-                 ?: throw UnknownObjectError(burdenEstimateSetId, BurdenEstimateSet::class)
+        return mapper.mapBurdenEstimateSets(records).singleOrNull()
+                ?: throw UnknownObjectError(burdenEstimateSetId, BurdenEstimateSet::class)
     }
 
     override fun getBurdenEstimateSets(groupId: String, touchstoneVersionId: String, scenarioId: String): List<BurdenEstimateSet>
@@ -237,15 +233,15 @@ class JooqBurdenEstimateRepository(
             throw InvalidOperationError("Cannot get burden estimate data for stochastic burden estimate sets")
         }
 
-        return  dsl.select(
-                    DISEASE.ID,
-                    BURDEN_ESTIMATE.YEAR,
-                    BURDEN_ESTIMATE.AGE,
-                    COUNTRY.ID,
-                    COUNTRY.NAME,
-                    BURDEN_OUTCOME.CODE,
-                    BURDEN_ESTIMATE.VALUE
-                )
+        return dsl.select(
+                DISEASE.ID,
+                BURDEN_ESTIMATE.YEAR,
+                BURDEN_ESTIMATE.AGE,
+                COUNTRY.ID,
+                COUNTRY.NAME,
+                BURDEN_OUTCOME.CODE,
+                BURDEN_ESTIMATE.VALUE
+        )
                 .fromJoinPath(BURDEN_ESTIMATE_SET, BURDEN_ESTIMATE)
                 .join(RESPONSIBILITY)
                 .on(BURDEN_ESTIMATE_SET.RESPONSIBILITY.eq(RESPONSIBILITY.ID))
@@ -262,11 +258,11 @@ class JooqBurdenEstimateRepository(
                         COUNTRY.NAME,
                         BURDEN_OUTCOME.CODE)
                 .fetchSequence()
-                .map{it.into(BurdenEstimateOutcome::class.java)}
+                .map { it.into(BurdenEstimateOutcome::class.java) }
 
     }
 
-    override fun getExpectedOutcomesForBurdenEstimateSet(burdenEstimateSetId: Int) : List<String>
+    override fun getExpectedOutcomesForBurdenEstimateSet(burdenEstimateSetId: Int): List<String>
     {
         return dsl.select(BURDEN_ESTIMATE_OUTCOME_EXPECTATION.OUTCOME)
                 .from(BURDEN_ESTIMATE_SET)
@@ -421,66 +417,6 @@ class JooqBurdenEstimateRepository(
         }
     }
 
-    override fun createBurdenEstimateSet(groupId: String, touchstoneVersionId: String, scenarioId: String,
-                                         properties: CreateBurdenEstimateSet,
-                                         uploader: String, timestamp: Instant): Int
-    {
-        // Dereference modelling group IDs
-        val modellingGroup = modellingGroupRepository.getModellingGroup(groupId)
-
-        val responsibilityInfo = getResponsibilityInfo(modellingGroup.id, touchstoneVersionId, scenarioId)
-        val status = responsibilityInfo.setStatus.toLowerCase()
-
-        if (status == ResponsibilitySetStatus.SUBMITTED.name.toLowerCase())
-        {
-            throw InvalidOperationError("The burden estimates uploaded for this touchstone have been submitted " +
-                    "for review. You cannot upload any new estimates.")
-        }
-
-        if (status == ResponsibilitySetStatus.APPROVED.name.toLowerCase())
-        {
-            throw InvalidOperationError("The burden estimates uploaded for this touchstone have been reviewed" +
-                    " and approved. You cannot upload any new estimates.")
-        }
-
-        val modelRunParameterSetId = properties.modelRunParameterSet
-        if (modelRunParameterSetId != null)
-        {
-            dsl.select(MODEL_RUN_PARAMETER_SET.ID)
-                    .from(MODEL_RUN_PARAMETER_SET)
-                    .where(MODEL_RUN_PARAMETER_SET.ID.eq(modelRunParameterSetId))
-                    .fetch()
-                    .singleOrNull() ?: throw UnknownObjectError(modelRunParameterSetId, "model run parameter set")
-        }
-
-        val latestModelVersion = getlatestModelVersion(modellingGroup.id, responsibilityInfo.disease)
-
-        val setId = addSet(responsibilityInfo.id, uploader, timestamp, latestModelVersion, properties)
-        updateCurrentBurdenEstimateSet(responsibilityInfo.id, setId, properties.type)
-
-        return setId
-    }
-
-    override fun clearBurdenEstimateSet(setId: Int, groupId: String, touchstoneVersionId: String, scenarioId: String)
-    {
-        // Dereference modelling group IDs
-        val modellingGroup = modellingGroupRepository.getModellingGroup(groupId)
-
-        // make sure set belongs to responsibility
-        val responsibilityInfo = getResponsibilityInfo(modellingGroup.id, touchstoneVersionId, scenarioId)
-        val set = getBurdenEstimateSetForResponsibility(setId, responsibilityInfo.id)
-
-        if (set.status == BurdenEstimateSetStatus.COMPLETE)
-        {
-            throw InvalidOperationError("You cannot clear a burden estimate set which is marked as 'complete'.")
-        }
-
-        // We do this first, as this change will be rolled back if the annex
-        // changes fail, but the reverse is not true
-        changeBurdenEstimateStatus(setId, BurdenEstimateSetStatus.EMPTY)
-        getEstimateWriter(set).clearEstimateSet(setId)
-    }
-
     override fun getEstimateWriter(set: BurdenEstimateSet): BurdenEstimateWriter
     {
         return if (set.isStochastic())
@@ -532,7 +468,7 @@ class JooqBurdenEstimateRepository(
                 .execute()
     }
 
-    private fun addSet(responsibilityId: Int, uploader: String, timestamp: Instant,
+    override fun addBurdenEstimateSet(responsibilityId: Int, uploader: String, timestamp: Instant,
                        modelVersion: Int, properties: CreateBurdenEstimateSet): Int
     {
         val setRecord = dsl.newRecord(BURDEN_ESTIMATE_SET).apply {
@@ -551,7 +487,8 @@ class JooqBurdenEstimateRepository(
         return setRecord.id
     }
 
-    override fun getResponsibilityInfo(groupId: String, touchstoneVersionId: String, scenarioId: String): ResponsibilityInfo
+    override fun getResponsibilityInfo(groupId: String, touchstoneVersionId: String, scenarioId: String):
+            ResponsibilityInfo?
     {
         // Get responsibility ID
         return dsl.select(RESPONSIBILITY.ID, SCENARIO_DESCRIPTION.DISEASE, RESPONSIBILITY_SET.STATUS, RESPONSIBILITY_SET.ID.`as`("setId"))
@@ -562,7 +499,6 @@ class JooqBurdenEstimateRepository(
                 .and(SCENARIO_DESCRIPTION.ID.eq(scenarioId))
                 .fetchOne()
                 ?.into(ResponsibilityInfo::class.java)
-                ?: findMissingObjects(touchstoneVersionId, scenarioId)
     }
 
     private fun getResponsibilitySetId(groupId: String, touchstoneVersionId: String): Int
@@ -574,14 +510,5 @@ class JooqBurdenEstimateRepository(
                 .and(TOUCHSTONE.ID.eq(touchstoneVersionId))
                 .fetchOneInto(Int::class.java)
                 ?: throw UnknownObjectError(touchstoneVersionId, TouchstoneVersion::class)
-    }
-
-    private fun <T> findMissingObjects(touchstoneVersionId: String, scenarioId: String): T
-    {
-        touchstoneRepository.touchstoneVersions.get(touchstoneVersionId)
-        scenarioRepository.checkScenarioDescriptionExists(scenarioId)
-        // Note this is where the scenario_description *does* exist, but
-        // the group is not responsible for it in this touchstoneVersion
-        throw UnknownObjectError(scenarioId, "responsibility")
     }
 }

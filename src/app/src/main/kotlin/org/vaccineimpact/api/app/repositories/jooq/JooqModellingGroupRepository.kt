@@ -1,9 +1,11 @@
 package org.vaccineimpact.api.app.repositories.jooq
 
 import org.jooq.DSLContext
+import org.vaccineimpact.api.app.errors.DatabaseContentsError
 import org.vaccineimpact.api.app.errors.UnknownObjectError
 import org.vaccineimpact.api.app.repositories.ModellingGroupRepository
 import org.vaccineimpact.api.app.repositories.TouchstoneRepository
+import org.vaccineimpact.api.db.Tables
 import org.vaccineimpact.api.db.Tables.*
 import org.vaccineimpact.api.db.fetchInto
 import org.vaccineimpact.api.db.fieldsAsList
@@ -123,6 +125,19 @@ class JooqModellingGroupRepository(
                 .and(MODELLING_GROUP.REPLACED_BY.isNull)
                 .fetchInto<ModellingGroupRecord>()
                 .map { mapModellingGroup(it) }
+    }
+
+    override fun getlatestModelVersion(groupId: String, disease: String): Int
+    {
+        return dsl.select(Tables.MODEL_VERSION.ID)
+                .fromJoinPath(Tables.MODELLING_GROUP, MODEL)
+                .join(Tables.MODEL_VERSION)
+                .on(Tables.MODEL_VERSION.ID.eq(MODEL.CURRENT_VERSION))
+                .where(Tables.MODELLING_GROUP.ID.eq(groupId))
+                .and(MODEL.DISEASE.eq(disease))
+                .and(MODEL.IS_CURRENT)
+                .fetch().singleOrNull()?.value1()
+                ?: throw DatabaseContentsError("Modelling group $groupId does not have any models/model versions in the database")
     }
 
     private fun mapModellingGroup(x: ModellingGroupRecord) = ModellingGroup(x.id, x.description)

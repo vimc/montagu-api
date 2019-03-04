@@ -25,15 +25,11 @@ abstract class BurdenEstimateControllerTestsBase: MontaguTests() {
             }
 
     protected fun mockEstimatesRepository(
-            touchstoneVersionSet: SimpleDataSet<TouchstoneVersion, String> = mockTouchstones(),
             existingBurdenEstimateSet: BurdenEstimateSet = defaultEstimateSet
     ): BurdenEstimateRepository
     {
-        val touchstoneRepo = mockTouchstoneRepository(touchstoneVersionSet)
         return mock {
-            on { touchstoneRepository } doReturn touchstoneRepo
             on { getBurdenEstimateSet(any(), any(), any(), any()) } doReturn existingBurdenEstimateSet
-            on { createBurdenEstimateSet(any(), any(), any(), any(), any(), any()) } doReturn 1
         }
     }
 

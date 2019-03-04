@@ -10,25 +10,17 @@ import java.time.Instant
 
 interface BurdenEstimateRepository : Repository
 {
-    val touchstoneRepository: TouchstoneRepository
-
-    /** Returns the database ID of the newly created burden estimate set **/
-    fun createBurdenEstimateSet(groupId: String, touchstoneVersionId: String, scenarioId: String,
-                                properties: CreateBurdenEstimateSet,
-                                uploader: String, timestamp: Instant): Int
-
     fun getBurdenEstimateSet(groupId: String, touchstoneVersionId: String, scenarioId: String,
                              burdenEstimateSetId: Int): BurdenEstimateSet
 
     fun getBurdenEstimateSets(groupId: String, touchstoneVersionId: String, scenarioId: String): List<BurdenEstimateSet>
-
-    fun clearBurdenEstimateSet(setId: Int, groupId: String, touchstoneVersionId: String, scenarioId: String)
 
     fun addModelRunParameterSet(groupId: String, touchstoneVersionId: String, disease: String,
                                 modelRuns: List<ModelRun>,
                                 uploader: String, timestamp: Instant): Int
 
     fun getModelRunParameterSets(groupId: String, touchstoneVersionId: String): List<ModelRunParameterSet>
+    @Throws(UnknownObjectError::class)
     fun checkModelRunParameterSetExists(modelRunParameterSetId: Int, groupId: String, touchstoneVersionId: String)
 
     fun getModelRunParameterSet(groupId: String, touchstoneVersionId: String, setId: Int): FlexibleDataTable<ModelRun>
@@ -37,8 +29,8 @@ interface BurdenEstimateRepository : Repository
     fun getEstimateWriter(set: BurdenEstimateSet): BurdenEstimateWriter
     fun getBurdenEstimateSetForResponsibility(setId: Int, responsibilityId: Int): BurdenEstimateSet
 
-    @Throws(UnknownObjectError::class)
-    fun getResponsibilityInfo(groupId: String, touchstoneVersionId: String, scenarioId: String): ResponsibilityInfo
+    fun getResponsibilityInfo(groupId: String, touchstoneVersionId: String, scenarioId: String): ResponsibilityInfo?
+
     fun validateEstimates(set: BurdenEstimateSet,
                           expectedRowMap: HashMap<String, HashMap<Short, HashMap<Short, Boolean>>>)
             : HashMap<String, HashMap<Short, HashMap<Short, Boolean>>>
@@ -52,4 +44,5 @@ interface BurdenEstimateRepository : Repository
             : Sequence<BurdenEstimateOutcome>
 
     fun getExpectedOutcomesForBurdenEstimateSet(burdenEstimateSetId: Int) : List<String>
+    fun addBurdenEstimateSet(responsibilityId: Int, uploader: String, timestamp: Instant, modelVersion: Int, properties: CreateBurdenEstimateSet): Int
 }

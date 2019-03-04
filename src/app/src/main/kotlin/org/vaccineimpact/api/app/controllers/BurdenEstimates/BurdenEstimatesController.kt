@@ -4,29 +4,20 @@ import org.vaccineimpact.api.app.context.ActionContext
 import org.vaccineimpact.api.app.context.postData
 import org.vaccineimpact.api.app.logic.BurdenEstimateLogic
 import org.vaccineimpact.api.app.logic.RepositoriesBurdenEstimateLogic
-import org.vaccineimpact.api.app.repositories.BurdenEstimateRepository
-import org.vaccineimpact.api.app.repositories.ModellingGroupRepository
 import org.vaccineimpact.api.app.repositories.Repositories
-import org.vaccineimpact.api.app.repositories.ScenarioRepository
 import org.vaccineimpact.api.models.*
 import org.vaccineimpact.api.serialization.StreamSerializable
 import java.time.Instant
 
 open class BurdenEstimatesController(
         context: ActionContext,
-        private val estimatesLogic: BurdenEstimateLogic,
-        private val estimateRepository: BurdenEstimateRepository,
-        private val groupRepository: ModellingGroupRepository,
-        private val scenarioRepository: ScenarioRepository
+        private val estimatesLogic: BurdenEstimateLogic
 ) : BaseBurdenEstimateController(context, estimatesLogic)
 {
     constructor(context: ActionContext, repos: Repositories)
             : this(context,
             RepositoriesBurdenEstimateLogic(repos.modellingGroup, repos.burdenEstimates, repos.expectations, repos.scenario,
-                    repos.touchstone),
-            repos.burdenEstimates,
-            repos.modellingGroup,
-            repos.scenario)
+                    repos.touchstone))
 
     fun getBurdenEstimateSets(): List<BurdenEstimateSet>
     {
@@ -47,14 +38,7 @@ open class BurdenEstimatesController(
         val path = getValidResponsibilityPath()
         val properties = context.postData<CreateBurdenEstimateSet>()
 
-        //Also check if any specified model run parameter set belongs to this group and touchstone
-        if (properties.modelRunParameterSet != null)
-        {
-            estimateRepository.checkModelRunParameterSetExists(properties.modelRunParameterSet!!, path.groupId,
-                    path.touchstoneVersionId)
-        }
-
-        val id = estimateRepository.createBurdenEstimateSet(path.groupId, path.touchstoneVersionId, path.scenarioId,
+        val id = estimatesLogic.createBurdenEstimateSet(path.groupId, path.touchstoneVersionId, path.scenarioId,
                 properties = properties,
                 uploader = context.username!!,
                 timestamp = Instant.now())
@@ -84,7 +68,7 @@ open class BurdenEstimatesController(
     {
         val path = getValidResponsibilityPath()
         val setId = context.params(":set-id").toInt()
-        estimateRepository.clearBurdenEstimateSet(setId, path.groupId, path.touchstoneVersionId, path.scenarioId)
+        estimatesLogic.clearBurdenEstimateSet(setId, path.groupId, path.touchstoneVersionId, path.scenarioId)
         return okayResponse()
     }
 

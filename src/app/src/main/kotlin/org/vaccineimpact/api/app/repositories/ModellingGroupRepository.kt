@@ -18,4 +18,5 @@ interface ModellingGroupRepository : Repository
     fun createModellingGroup(newGroup: ModellingGroupCreation)
 
     fun getDiseasesForModellingGroup(groupId: String): List<String>
+    fun getlatestModelVersion(groupId: String, disease: String): Int
 }

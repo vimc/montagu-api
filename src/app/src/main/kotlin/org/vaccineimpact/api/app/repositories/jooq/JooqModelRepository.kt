@@ -2,10 +2,13 @@ package org.vaccineimpact.api.app.repositories.jooq
 
 import org.jooq.Configuration
 import org.jooq.DSLContext
+import org.vaccineimpact.api.app.errors.DatabaseContentsError
 import org.vaccineimpact.api.app.errors.UnknownObjectError
 import org.vaccineimpact.api.app.repositories.ModelRepository
 import org.vaccineimpact.api.db.JooqContext
+import org.vaccineimpact.api.db.Tables
 import org.vaccineimpact.api.db.Tables.MODEL
+import org.vaccineimpact.api.db.fromJoinPath
 import org.vaccineimpact.api.models.Model
 
 class JooqModelRepository(dsl: DSLContext) : JooqRepository(dsl), ModelRepository
@@ -25,4 +28,5 @@ class JooqModelRepository(dsl: DSLContext) : JooqRepository(dsl), ModelRepositor
         return model?.into(Model::class.java)
                 ?: throw UnknownObjectError(id, "model_id")
     }
+
 }
