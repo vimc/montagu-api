@@ -135,9 +135,12 @@ class BurdenEstimateUploadController(context: ActionContext,
                     path.scenarioId,
                     setId)
 
+            val logic = RepositoriesBurdenEstimateLogic(repos.modellingGroup, repos.burdenEstimates, repos.expectations, repos.scenario,
+                    repos.touchstone)
+
             // Then add the burden estimates
             val data = getBurdenEstimateDataFromCSV(metadata, source)
-            estimatesLogic.populateBurdenEstimateSet(
+            logic.populateBurdenEstimateSet(
                     setId,
                     path.groupId, path.touchstoneVersionId, path.scenarioId,
                     data

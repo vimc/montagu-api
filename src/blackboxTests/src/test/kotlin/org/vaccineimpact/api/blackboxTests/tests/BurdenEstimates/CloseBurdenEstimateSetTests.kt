@@ -107,7 +107,6 @@ class CloseBurdenEstimateSetTests : BurdenEstimateTests()
         assertSetHasStatus("invalid", setId)
     }
 
-    @Ignore
     @Test
     fun `can populate and close burden estimate with onetime token and redirect`()
     {
@@ -125,8 +124,7 @@ class CloseBurdenEstimateSetTests : BurdenEstimateTests()
         JSONValidator().validateSuccess(resultAsString)
         assertSetHasStatus("complete", setId)
     }
-
-    @Ignore
+    
     @Test
     fun `missing rows error comes through with redirect`()
     {
