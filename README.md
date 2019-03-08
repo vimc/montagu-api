@@ -70,6 +70,7 @@ This is what the CI system does:
 1. `./scripts/make-build-env.sh` - This builds a Docker image that contains OpenJDK, Gradle and the source files
 2. `./scripts/run-build.sh` - Within that built docker image it compiles the code, runs the unit tests, and builds a second Docker image. This second Docker image contains the compiled code and a Java Runtime Environment.
 
+
 ## Docker run
 To make use of a built image, run:
 
