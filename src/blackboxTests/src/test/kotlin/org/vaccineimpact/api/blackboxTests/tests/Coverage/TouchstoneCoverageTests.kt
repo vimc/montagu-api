@@ -369,7 +369,7 @@ class TouchstoneCoverageTests : CoverageTests()
             userHelper.setupTestUser(it)
         }
 
-        val response = requestHelper.get(url, minimumPermissions, acceptsContentType = "http://localhost:5000text/csv")
+        val response = requestHelper.get(url, minimumPermissions, acceptsContentType = "text/csv")
 
         val csv = StringReader(response.text)
                 .use { CSVReader(it).readAll() }
