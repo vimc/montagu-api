@@ -2,11 +2,10 @@
 set -ex
 
 here=$(dirname $0)
-root=$(realpath $here/..)
 
-export MONTAGU_API_VERSION=$(git rev-parse --short=7 HEAD)
-export MONTAGU_DB_VERSION=$(<src/config/db_version)
-MONTAGU_API_BRANCH=$(git symbolic-ref --short HEAD)
+export MONTAGU_API_VERSION=master
+export MONTAGU_DB_VERSION=master
+export ORDERLY_SERVER_USER_ID=$UID
 registry=docker.montagu.dide.ic.ac.uk:5000
 migrate_image=$registry/montagu-migrate:$MONTAGU_DB_VERSION
 
@@ -30,28 +29,4 @@ docker run --rm --network=montagu_default $migrate_image
 docker exec montagu_orderly_web_1 mkdir -p /etc/orderly/web
 docker exec montagu_orderly_web_1 touch /etc/orderly/web/go_signal
 
-# Build an image that can run blackbox tests
-docker build -f blackbox.Dockerfile -t montagu-api-blackbox-tests .
-
-# Push blackbox tests image so it can be reused
-name=montagu-api-blackbox-tests
-docker_tag=$registry/$name
-commit_tag=$registry/$name:$MONTAGU_API_VERSION
-branch_tag=$registry/$name:$MONTAGU_API_BRANCH
-
-docker tag montagu-api-blackbox-tests $commit_tag
-docker tag montagu-api-blackbox-tests $branch_tag
-docker push $commit_tag 
-docker push $branch_tag
-
-# Run the tests
-docker run \
-  --network montagu_default \
-  -v montagu_emails:/tmp/montagu_emails \
-  montagu-api-blackbox-tests
-
-# Tear down
-docker-compose --project-name montagu down
-
-
-
+$here/setup-task-queue.sh

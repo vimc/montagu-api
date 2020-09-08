@@ -1,28 +1,23 @@
 package org.vaccineimpact.api.tests.clients
 
 import org.junit.Test
-import com.geneea.celery.Celery
 import org.assertj.core.api.Assertions.*
-import org.vaccineimpact.api.db.Config
+import org.vaccineimpact.api.app.clients.CeleryClient
+import org.vaccineimpact.api.test_helpers.MontaguTests
 
-class CeleryTests
+class CeleryTests: MontaguTests()
 {
     @Test
     fun `can call task`()
     {
-        val broker = Config["celery.broker"]
-        val backend = Config["celery.backend"]
-        val client = Celery.builder()
-                .brokerUri(broker)
-                .backendUri(backend)
-                .build()
+       val client = CeleryClient()
+        val task = client.runDiagnosticReport("testGroup", "testDisease")
 
-        val task = client.submit<ArrayList<String>>("src.task_run_diagnostic_reports.run_diagnostic_reports",
-                arrayOf("testGroup", "testDisease") as Array<out Any>)
-
-        // at this point could be fire and forget, but for the sake of testing
-        val result = task.get()
+        val result = task.get().mapValues { DiagnosticReportTaskResult(it.value["published"]?: false) }
         assertThat(result.count()).isEqualTo(2)
+        assertThat(result.entries.first().value.published).isTrue()
+        assertThat(result.entries.last().value.published).isTrue()
     }
-
 }
+
+data class DiagnosticReportTaskResult(val published: Boolean)

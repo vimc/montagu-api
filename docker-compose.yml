@@ -18,5 +18,26 @@ services:
     volumes:
       - ${PWD}/src/demo:/orderly
       - ${PWD}/src/config/blackboxTests/orderlyweb:/etc/orderly/web
+  orderly:
+    image: vimc/orderly.server:master
+    user: ${ORDERLY_SERVER_USER_ID}
+    command: /orderly
+    ports:
+      - "8321:8321"
+    volumes:
+      - ${PWD}/src/demo:/orderly
+    logging:
+      driver: none
+  mq:
+    image: rabbitmq
+    ports:
+      - "5672:5672"
+    volumes:
+      - mq:/var/lib/rabbitmq
+  task_queue:
+    image: vimc/task-queue-worker:master
+    depends_on:
+      - mq
 volumes:
   emails:
+  mq:
