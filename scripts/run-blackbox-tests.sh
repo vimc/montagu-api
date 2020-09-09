@@ -12,7 +12,7 @@ migrate_image=$registry/montagu-migrate:$MONTAGU_DB_VERSION
 
 $here/run-orderly-web-deps.sh
 
-# Run API, DB, orderlyweb, task queue
+# Run API, DB and orderlyweb
 docker-compose pull
 docker-compose --project-name montagu up -d
 docker exec montagu_api_1 mkdir -p /etc/montagu/api/

@@ -35,7 +35,7 @@ services:
     volumes:
       - mq:/var/lib/rabbitmq
   task_queue:
-    image: vimc/task-queue-worker:master
+    image: vimc/task-queue-worker:vimc-4257
     depends_on:
       - mq
 volumes:

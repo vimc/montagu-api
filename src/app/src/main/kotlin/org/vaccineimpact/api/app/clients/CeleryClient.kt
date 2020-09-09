@@ -16,9 +16,9 @@ class CeleryClient
             .backendUri(backend)
             .build()
 
-    fun runDiagnosticReport(group: String, disease: String): ListenableFuture<CeleryTaskResult>
+    fun runDiagnosticReport(group: String, disease: String, touchstone: String): ListenableFuture<CeleryTaskResult>
     {
-        val args = arrayOf(group, disease) as CeleryTaskArguments
+        val args = arrayOf(group, disease, touchstone) as CeleryTaskArguments
         return client.submit<CeleryTaskResult>("run-diagnostic-reports", args)
     }
 }

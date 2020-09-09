@@ -11,8 +11,8 @@ migrate_image=$registry/montagu-migrate:$MONTAGU_DB_VERSION
 
 $here/run-orderly-web-deps.sh
 
-# Run API, DB, orderlyweb, task queue
-docker-compose pull
+# Run API, DB, orderlyweb and task q
+docker-compose pull || true
 docker-compose --project-name montagu up -d
 docker exec montagu_api_1 mkdir -p /etc/montagu/api/
 docker exec montagu_api_1 touch /etc/montagu/api/go_signal
@@ -21,7 +21,7 @@ docker exec montagu_api_1 touch /etc/montagu/api/go_signal
 # -------------------------------------------------------------
 docker exec montagu_db_1 montagu-wait.sh
 
-docker pull $migrate_image
+docker pull $migrate_image || true
 docker run --rm --network=montagu_default $migrate_image
 
 # -------------------------------------------------------------
