@@ -1,6 +1,7 @@
 set -e
 git_id=$(git rev-parse --short=7 HEAD)
 git_branch=$(git symbolic-ref --short HEAD)
+HERE=$(dirname $0)
 
 # This is the path for teamcity agents. If running locally, pass in your own docker config location
 # i.e. /home/{user}/.docker/config.json
@@ -23,3 +24,7 @@ docker run --rm \
     -v $docker_auth_path:/root/.docker/config.json \
     --network=host \
     montagu-api-app-build
+
+# tear down
+docker-compose --project-name montagu down
+$HERE/clear-docker.sh
