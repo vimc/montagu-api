@@ -1,4 +1,9 @@
 language: java
+addons:
+  apt:
+    packages:
+      - python3-pip
+      - python3-setuptools
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -17,10 +22,11 @@ install:
   - ./src/gradlew -p src
 before_script:
   - sudo mkdir -p /etc/montagu/api/ && sudo touch /etc/montagu/api/go_signal
-  - ./travis/start-database.sh
-  - ./scripts/start-orderly-web.sh
+  - ./src/gradlew -p src :startDatabase :startOrderlyWeb :startTaskQueue :startTestAPI
 script:
-  - ./src/gradlew -p src :testLibrary
+  - ./src/gradlew -p src :testLibrary :stopTestAPI :stopDatabase :stopTaskQueue :stopOrderlyWeb
+  - ./src/gradlew -p src :startDatabase
+  - ./scripts/start-orderly-web.sh host
   - nohup ./src/gradlew -p src :run > /dev/null 2>&1 &
   - ./src/gradlew -p src :blackboxTests:test
 after_success:

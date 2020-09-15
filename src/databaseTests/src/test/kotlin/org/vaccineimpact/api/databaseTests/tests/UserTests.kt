@@ -397,8 +397,8 @@ class UserTests : RepositoryTests<UserRepository>()
             val expectedUser = User("testuser", "Test User", "test1@test.com", null)
             val results = repo.all().toList()
 
-            assertThat(results.count()).isEqualTo(2)
-            assertThat(results[0]).isEqualToComparingFieldByField(expectedUser)
+            assertThat(results.count()).isEqualTo(3) // also includes task q user
+            assertThat(results[1]).isEqualToComparingFieldByField(expectedUser)
         }
     }
 
@@ -468,10 +468,10 @@ class UserTests : RepositoryTests<UserRepository>()
 
             val results = repo.allWithRoles()
 
-            assertThat(results.count()).isEqualTo(2)
+            assertThat(results.count()).isEqualTo(3) // also includes task q user
 
-            checkUserWithRoles(results[0], expectedUser, expectedRoles1)
-            checkUserWithRoles(results[1], expectedUser2, expectedRoles2)
+            checkUserWithRoles(results[1], expectedUser, expectedRoles1)
+            checkUserWithRoles(results[2], expectedUser2, expectedRoles2)
 
         }
     }
