@@ -1,12 +1,12 @@
-broker: pyamqp://guest@montagu_mq_1//
+broker: pyamqp://guest@mq//
 backend: rpc://
 servers:
   montagu:
-    url: http://montagu_api_1:8080
+    url: http://api:8080
     user: task.user@example.com
     password: password
   orderlyweb:
-    url: http://montagu_orderly_web_1:8888
+    url: http://orderly_web_web:8888
   smtp:
     host: localhost
     port: 1025
