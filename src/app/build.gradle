@@ -2,7 +2,10 @@ buildscript {
     repositories {
         mavenCentral()
         // This is needed for gradle-docker
-        jcenter()
+//        jcenter()
+//        maven {
+//            https://repository.mulesoft.org/nexus/content/repositories/public/
+//        }
     }
     dependencies {
         classpath 'se.transmode.gradle:gradle-docker:1.2'
