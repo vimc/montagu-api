@@ -1,6 +1,7 @@
 package org.vaccineimpact.api.db
 
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.*
 import kotlin.math.pow
 
@@ -16,7 +17,7 @@ fun Random.nextDecimal(min: Int = 0, max: Int = 1, numberOfDecimalPlaces: Int = 
     val range = max - min
     val factor = 10.0.pow(numberOfDecimalPlaces.toDouble())
     val int = this.nextInt(range * factor.toInt())
-    return BigDecimal(int).divide(BigDecimal.valueOf(factor), numberOfDecimalPlaces, BigDecimal.ROUND_HALF_UP)
+    return BigDecimal(int).divide(BigDecimal.valueOf(factor), numberOfDecimalPlaces, RoundingMode.HALF_UP)
 }
 
 fun Int.toDecimal(): BigDecimal = this.toLong().toDecimal()
