@@ -13,6 +13,7 @@ import org.vaccineimpact.api.db.direct.addGroup
 import org.vaccineimpact.api.db.direct.addTouchstoneVersion
 import org.vaccineimpact.api.db.fromJoinPath
 import org.vaccineimpact.api.models.ModelRun
+import java.time.ZoneOffset
 
 class ModelParameterTests : BurdenEstimateRepositoryTests()
 {
@@ -47,7 +48,7 @@ class ModelParameterTests : BurdenEstimateRepositoryTests()
     private fun checkUploadInfo(record: Record)
     {
         Assertions.assertThat(record[Tables.UPLOAD_INFO.UPLOADED_BY]).isEqualTo(username)
-        Assertions.assertThat(record[Tables.UPLOAD_INFO.UPLOADED_ON].toInstant()).isEqualTo(timestamp)
+        Assertions.assertThat(record[Tables.UPLOAD_INFO.UPLOADED_ON]).isEqualTo(timestamp)
     }
 
     private fun checkParameters(db: JooqContext)

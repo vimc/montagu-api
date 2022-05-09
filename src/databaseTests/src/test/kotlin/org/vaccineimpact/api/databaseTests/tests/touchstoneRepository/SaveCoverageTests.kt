@@ -16,6 +16,7 @@ import org.vaccineimpact.api.models.GenderEnum
 import java.math.BigDecimal
 import java.sql.Timestamp
 import java.time.Instant
+import java.time.ZoneOffset
 
 class SaveCoverageTests : TouchstoneRepositoryTests()
 {
@@ -36,7 +37,7 @@ class SaveCoverageTests : TouchstoneRepositoryTests()
             val metadata = it.dsl.selectFrom(COVERAGE_SET_UPLOAD_METADATA)
                     .fetchOne()
             assertThat(metadata[COVERAGE_SET_UPLOAD_METADATA.UPLOADED_BY]).isEqualTo("test.user")
-            assertThat(metadata[COVERAGE_SET_UPLOAD_METADATA.UPLOADED_ON].toInstant()).isEqualTo(now)
+            assertThat(metadata[COVERAGE_SET_UPLOAD_METADATA.UPLOADED_ON]).isEqualTo(now)
             assertThat(metadata[COVERAGE_SET_UPLOAD_METADATA.DESCRIPTION]).isEqualTo("desc")
 
             val set = it.dsl.selectFrom(COVERAGE_SET)

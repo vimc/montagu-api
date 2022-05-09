@@ -37,6 +37,17 @@ docker {
     files tasks.distTar.outputs, "userCLI.jar"
 }
 
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+
 // We run the tests as a suite (see UserCLITestSuite)
 // This line prevents them being run individually as well
 test.exclude "**/org/vaccineimpact/api/security/tests/**"

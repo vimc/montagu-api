@@ -23,6 +23,8 @@ import org.vaccineimpact.api.serialization.FlexibleDataTable
 import java.beans.ConstructorProperties
 import java.sql.Timestamp
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 data class ResponsibilityInfo
 @ConstructorProperties("id", "disease", "status", "setId")
@@ -376,7 +378,7 @@ class JooqBurdenEstimateRepository(
     {
         val uploadInfo = dsl.newRecord(UPLOAD_INFO).apply {
             this.uploadedBy = uploader
-            this.uploadedOn = Timestamp.from(timestamp)
+            this.uploadedOn = timestamp
         }
 
         uploadInfo.store()
@@ -479,7 +481,7 @@ class JooqBurdenEstimateRepository(
             this.modelVersion = modelVersionId
             this.responsibility = responsibilityId
             this.uploadedBy = uploader
-            this.uploadedOn = Timestamp.from(timestamp)
+            this.uploadedOn = timestamp
             this.runInfo = "Not provided"
             this.interpolated = false
             this.status = "empty"

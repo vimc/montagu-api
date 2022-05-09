@@ -4,7 +4,7 @@
 package org.vaccineimpact.api.db.tables;
 
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +22,7 @@ import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
 import org.jooq.impl.TableImpl;
 import org.vaccineimpact.api.db.Indexes;
+import org.vaccineimpact.api.db.InstantConverter;
 import org.vaccineimpact.api.db.Keys;
 import org.vaccineimpact.api.db.Public;
 import org.vaccineimpact.api.db.tables.records.ResponsibilityCommentRecord;
@@ -40,7 +41,7 @@ import org.vaccineimpact.api.db.tables.records.ResponsibilityCommentRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ResponsibilityComment extends TableImpl<ResponsibilityCommentRecord> {
 
-    private static final long serialVersionUID = 1120889702;
+    private static final long serialVersionUID = 232252935;
 
     /**
      * The reference instance of <code>public.responsibility_comment</code>
@@ -78,7 +79,7 @@ public class ResponsibilityComment extends TableImpl<ResponsibilityCommentRecord
     /**
      * The column <code>public.responsibility_comment.added_on</code>.
      */
-    public final TableField<ResponsibilityCommentRecord, Timestamp> ADDED_ON = createField("added_on", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false), this, "");
+    public final TableField<ResponsibilityCommentRecord, Instant> ADDED_ON = createField("added_on", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false), this, "", new InstantConverter());
 
     /**
      * Create a <code>public.responsibility_comment</code> table reference

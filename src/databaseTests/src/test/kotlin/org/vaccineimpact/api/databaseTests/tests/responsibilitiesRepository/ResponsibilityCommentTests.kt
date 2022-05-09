@@ -37,7 +37,7 @@ class ResponsibilityCommentTests : ResponsibilitiesRepositoryTests() {
             Assertions.assertThat(result.size).isEqualTo(2)
             Assertions.assertThat(result[1][Tables.RESPONSIBILITY_COMMENT.COMMENT]).isEqualTo("comment 1")
             Assertions.assertThat(result[1][Tables.RESPONSIBILITY_COMMENT.ADDED_BY]).isEqualTo("test.user")
-            Assertions.assertThat(result[1][Tables.RESPONSIBILITY_COMMENT.ADDED_ON]).isEqualTo(Timestamp.from(now))
+            Assertions.assertThat(result[1][Tables.RESPONSIBILITY_COMMENT.ADDED_ON]).isEqualTo(now)
         }
     }
 
@@ -54,7 +54,7 @@ class ResponsibilityCommentTests : ResponsibilitiesRepositoryTests() {
             Assertions.assertThat(result.size).isEqualTo(2)
             Assertions.assertThat(result[1][Tables.RESPONSIBILITY_SET_COMMENT.COMMENT]).isEqualTo("comment 1")
             Assertions.assertThat(result[1][Tables.RESPONSIBILITY_SET_COMMENT.ADDED_BY]).isEqualTo("test.user")
-            Assertions.assertThat(result[1][Tables.RESPONSIBILITY_SET_COMMENT.ADDED_ON]).isEqualTo(Timestamp.from(now))
+            Assertions.assertThat(result[1][Tables.RESPONSIBILITY_SET_COMMENT.ADDED_ON]).isEqualTo(now)
         }
     }
 

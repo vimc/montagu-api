@@ -12,6 +12,9 @@ import org.vaccineimpact.api.security.ensureUserHasRole
 import java.math.BigDecimal
 import java.sql.Timestamp
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.LocalDateTime.*
+import java.time.ZoneOffset
 import java.util.*
 
 private val random = Random(0)
@@ -245,7 +248,7 @@ fun JooqContext.addBurdenEstimateSet(
 ): Int
 {
     val record = this.dsl.newRecord(BURDEN_ESTIMATE_SET).apply {
-        this.uploadedOn = Timestamp.from(timestamp)
+        this.uploadedOn = timestamp
         this.responsibility = responsibilityId
         this.modelVersion = modelVersionId
         this.uploadedBy = username
@@ -437,7 +440,7 @@ fun JooqContext.addCoverageSetUploadMetadata(
     val record = this.dsl.newRecord(COVERAGE_SET_UPLOAD_METADATA).apply {
         this.description = description
         this.uploadedBy = uploadedBy
-        this.uploadedOn = Timestamp.from(uploadedOn)
+        this.uploadedOn = uploadedOn
     }
     record.store()
     val metaId = record.id
@@ -902,7 +905,7 @@ fun JooqContext.addResponsibilityComment(
         this.responsibility = responsibilityId
         this.comment = comment
         this.addedBy = addedBy
-        this.addedOn = Timestamp.from(addedOn)
+        this.addedOn = addedOn
     }.store()
 }
 
@@ -917,6 +920,6 @@ fun JooqContext.addResponsibilitySetComment(
         this.responsibilitySet = responsibilitySetId
         this.comment = comment
         this.addedBy = addedBy
-        this.addedOn = Timestamp.from(addedOn)
+        this.addedOn = addedOn
     }.store()
 }

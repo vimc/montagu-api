@@ -26,7 +26,6 @@ task validateSchema(dependsOn: ':validateSchema:test')
 // i.e. everything other than blackboxTests.
 task testLibrary(dependsOn: [':app:test', 'serialization:test', ':databaseTests:test', ':userCLI:test', ':security:test'])
 
-
 def loadPropertiesFile(path) {
     def props = new Properties()
     def f = file(path)
@@ -130,17 +129,6 @@ subprojects {
         reports {
             xml.enabled true
             csv.enabled false
-        }
-    }
-
-    compileKotlin {
-        kotlinOptions {
-            jvmTarget = "11"
-        }
-    }
-    compileTestKotlin {
-        kotlinOptions {
-            jvmTarget = "11"
         }
     }
 

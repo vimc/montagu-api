@@ -20,6 +20,8 @@ import org.vaccineimpact.api.models.permissions.RoleAssignment
 import org.vaccineimpact.api.security.*
 import java.sql.Timestamp
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class JooqUserRepository(dsl: DSLContext) : JooqRepository(dsl), UserRepository
 {
@@ -92,7 +94,7 @@ class JooqUserRepository(dsl: DSLContext) : JooqRepository(dsl), UserRepository
     override fun updateLastLoggedIn(username: String)
     {
         dsl.update(APP_USER)
-                .set(APP_USER.LAST_LOGGED_IN, Timestamp.from(Instant.now()))
+                .set(APP_USER.LAST_LOGGED_IN, Instant.now())
                 .where(APP_USER.USERNAME.eq(username))
                 .execute()
     }

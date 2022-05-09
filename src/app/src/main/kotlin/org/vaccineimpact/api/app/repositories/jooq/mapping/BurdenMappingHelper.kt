@@ -7,6 +7,7 @@ import org.vaccineimpact.api.db.Tables.MODEL_RUN_PARAMETER_VALUE
 import org.vaccineimpact.api.db.Tables.MODEL_RUN_PARAMETER
 import org.vaccineimpact.api.db.Tables.MODEL_RUN
 import org.vaccineimpact.api.models.*
+import java.time.ZoneOffset
 
 class BurdenMappingHelper : MappingHelper()
 {
@@ -32,7 +33,7 @@ class BurdenMappingHelper : MappingHelper()
         val problems = group.value.mapNotNull { it[Tables.BURDEN_ESTIMATE_SET_PROBLEM.PROBLEM] }
         return BurdenEstimateSet(
                 common[table.ID],
-                common[table.UPLOADED_ON].toInstant(),
+                common[table.UPLOADED_ON],
                 common[table.UPLOADED_BY],
                 mapBurdenEstimateSetType(common),
                 mapEnum(common[table.STATUS]),

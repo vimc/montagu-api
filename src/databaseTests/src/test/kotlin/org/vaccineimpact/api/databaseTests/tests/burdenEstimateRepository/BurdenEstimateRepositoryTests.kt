@@ -149,7 +149,7 @@ abstract class BurdenEstimateRepositoryTests : RepositoryTests<BurdenEstimateRep
         Assertions.assertThat(set[t.MODEL_VERSION]).isEqualTo(returnedIds.modelVersion!!)
         Assertions.assertThat(set[t.RESPONSIBILITY]).isEqualTo(returnedIds.responsibility)
         Assertions.assertThat(set[t.UPLOADED_BY]).isEqualTo(username)
-        Assertions.assertThat(set[t.UPLOADED_ON].toInstant()).isEqualTo(timestamp)
+        Assertions.assertThat(set[t.UPLOADED_ON]).isEqualTo(timestamp)
         Assertions.assertThat(set[t.STATUS]).isEqualTo(expectedStatus)
         return set[t.ID]
     }

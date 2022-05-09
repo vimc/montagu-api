@@ -4,7 +4,7 @@
 package org.vaccineimpact.api.db.tables;
 
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,6 +20,7 @@ import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
 import org.jooq.impl.TableImpl;
 import org.vaccineimpact.api.db.Indexes;
+import org.vaccineimpact.api.db.InstantConverter;
 import org.vaccineimpact.api.db.Keys;
 import org.vaccineimpact.api.db.Public;
 import org.vaccineimpact.api.db.tables.records.AppUserRecord;
@@ -38,7 +39,7 @@ import org.vaccineimpact.api.db.tables.records.AppUserRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUser extends TableImpl<AppUserRecord> {
 
-    private static final long serialVersionUID = 518121607;
+    private static final long serialVersionUID = -486364730;
 
     /**
      * The reference instance of <code>public.app_user</code>
@@ -76,7 +77,7 @@ public class AppUser extends TableImpl<AppUserRecord> {
     /**
      * The column <code>public.app_user.last_logged_in</code>.
      */
-    public final TableField<AppUserRecord, Timestamp> LAST_LOGGED_IN = createField("last_logged_in", org.jooq.impl.SQLDataType.TIMESTAMP, this, "");
+    public final TableField<AppUserRecord, Instant> LAST_LOGGED_IN = createField("last_logged_in", org.jooq.impl.SQLDataType.TIMESTAMP, this, "", new InstantConverter());
 
     /**
      * Create a <code>public.app_user</code> table reference

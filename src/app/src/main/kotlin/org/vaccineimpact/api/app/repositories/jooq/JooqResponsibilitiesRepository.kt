@@ -16,6 +16,8 @@ import org.vaccineimpact.api.models.Scenario
 import org.vaccineimpact.api.models.responsibilities.*
 import java.sql.Timestamp
 import java.time.Instant
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 class JooqResponsibilitiesRepository(
         dsl: DSLContext,
@@ -82,7 +84,7 @@ class JooqResponsibilitiesRepository(
         }
 
         val first = input.first()
-        val uploadedOn = first[Tables.BURDEN_ESTIMATE_SET.UPLOADED_ON].toInstant()
+        val uploadedOn = first[Tables.BURDEN_ESTIMATE_SET.UPLOADED_ON]
         return BurdenEstimateSet(
                 id = first[Tables.BURDEN_ESTIMATE_SET.ID],
                 uploadedBy = first[Tables.BURDEN_ESTIMATE_SET.UPLOADED_BY],
@@ -228,7 +230,7 @@ class JooqResponsibilitiesRepository(
             this.responsibility = getResponsibilityId(groupId, touchstoneVersionId, scenarioId)
             this.comment = comment
             this.addedBy = addedBy
-            this.addedOn = Timestamp.from(addedOn)
+            this.addedOn = addedOn
         }.store()
     }
 
@@ -238,7 +240,7 @@ class JooqResponsibilitiesRepository(
             this.responsibilitySet = getResponsibilitySet(groupId, touchstoneVersionId)!!.id
             this.comment = comment
             this.addedBy = addedBy
-            this.addedOn = Timestamp.from(addedOn)
+            this.addedOn = addedOn
         }.store()
     }
 

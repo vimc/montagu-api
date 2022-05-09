@@ -21,6 +21,7 @@ import org.vaccineimpact.api.serialization.SplitData
 import java.math.BigDecimal
 import java.sql.Timestamp
 import java.time.Instant
+import java.time.LocalDateTime
 import kotlin.sequences.Sequence
 
 class JooqTouchstoneRepository(
@@ -216,7 +217,7 @@ class JooqTouchstoneRepository(
         val record = this.dsl.newRecord(COVERAGE_SET_UPLOAD_METADATA).apply {
             this.description = description
             this.uploadedBy = uploader
-            this.uploadedOn = Timestamp.from(timestamp)
+            this.uploadedOn = timestamp
         }
         record.store()
         return record.id

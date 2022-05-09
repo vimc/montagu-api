@@ -26,6 +26,9 @@ dependencies {
 test {
     dependsOn 'copySpec', 'createTemplateFromDatabase'
     finalizedBy 'restoreDatabaseFromTemplate'
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
 
 task createTemplateFromDatabase(type: JavaExec) {

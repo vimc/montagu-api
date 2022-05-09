@@ -4,7 +4,7 @@
 package org.vaccineimpact.api.db.tables;
 
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,6 +21,7 @@ import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
 import org.jooq.impl.TableImpl;
 import org.vaccineimpact.api.db.Indexes;
+import org.vaccineimpact.api.db.InstantConverter;
 import org.vaccineimpact.api.db.Keys;
 import org.vaccineimpact.api.db.Public;
 import org.vaccineimpact.api.db.tables.records.UploadInfoRecord;
@@ -39,7 +40,7 @@ import org.vaccineimpact.api.db.tables.records.UploadInfoRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class UploadInfo extends TableImpl<UploadInfoRecord> {
 
-    private static final long serialVersionUID = 337553763;
+    private static final long serialVersionUID = 1285766502;
 
     /**
      * The reference instance of <code>public.upload_info</code>
@@ -67,7 +68,7 @@ public class UploadInfo extends TableImpl<UploadInfoRecord> {
     /**
      * The column <code>public.upload_info.uploaded_on</code>.
      */
-    public final TableField<UploadInfoRecord, Timestamp> UPLOADED_ON = createField("uploaded_on", org.jooq.impl.SQLDataType.TIMESTAMP.defaultValue(org.jooq.impl.DSL.field("date_trunc('milliseconds'::text, now())", org.jooq.impl.SQLDataType.TIMESTAMP)), this, "");
+    public final TableField<UploadInfoRecord, Instant> UPLOADED_ON = createField("uploaded_on", org.jooq.impl.SQLDataType.TIMESTAMP.defaultValue(org.jooq.impl.DSL.field("date_trunc('milliseconds'::text, now())", org.jooq.impl.SQLDataType.TIMESTAMP)), this, "", new InstantConverter());
 
     /**
      * Create a <code>public.upload_info</code> table reference

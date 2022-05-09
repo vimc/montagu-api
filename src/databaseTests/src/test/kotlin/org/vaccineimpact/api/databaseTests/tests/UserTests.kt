@@ -44,7 +44,7 @@ class UserTests : RepositoryTests<UserRepository>()
     {
         given(this::addTestUser).check { repo ->
             checkUser(getUser(repo, email))
-            checkUser(getUser(repo, email.toUpperCase()))
+            checkUser(getUser(repo, email.uppercase()))
         }
     }
 

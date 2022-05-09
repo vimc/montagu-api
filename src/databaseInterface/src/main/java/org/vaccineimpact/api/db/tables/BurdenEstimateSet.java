@@ -4,7 +4,7 @@
 package org.vaccineimpact.api.db.tables;
 
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +22,7 @@ import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
 import org.jooq.impl.TableImpl;
 import org.vaccineimpact.api.db.Indexes;
+import org.vaccineimpact.api.db.InstantConverter;
 import org.vaccineimpact.api.db.Keys;
 import org.vaccineimpact.api.db.Public;
 import org.vaccineimpact.api.db.tables.records.BurdenEstimateSetRecord;
@@ -40,7 +41,7 @@ import org.vaccineimpact.api.db.tables.records.BurdenEstimateSetRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class BurdenEstimateSet extends TableImpl<BurdenEstimateSetRecord> {
 
-    private static final long serialVersionUID = -2062499688;
+    private static final long serialVersionUID = 2007644085;
 
     /**
      * The reference instance of <code>public.burden_estimate_set</code>
@@ -103,7 +104,7 @@ public class BurdenEstimateSet extends TableImpl<BurdenEstimateSetRecord> {
     /**
      * The column <code>public.burden_estimate_set.uploaded_on</code>.
      */
-    public final TableField<BurdenEstimateSetRecord, Timestamp> UPLOADED_ON = createField("uploaded_on", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).defaultValue(org.jooq.impl.DSL.field("date_trunc('milliseconds'::text, now())", org.jooq.impl.SQLDataType.TIMESTAMP)), this, "");
+    public final TableField<BurdenEstimateSetRecord, Instant> UPLOADED_ON = createField("uploaded_on", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).defaultValue(org.jooq.impl.DSL.field("date_trunc('milliseconds'::text, now())", org.jooq.impl.SQLDataType.TIMESTAMP)), this, "", new InstantConverter());
 
     /**
      * The column <code>public.burden_estimate_set.status</code>.

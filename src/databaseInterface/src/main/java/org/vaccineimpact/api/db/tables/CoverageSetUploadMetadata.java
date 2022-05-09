@@ -4,7 +4,7 @@
 package org.vaccineimpact.api.db.tables;
 
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +22,7 @@ import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
 import org.jooq.impl.TableImpl;
 import org.vaccineimpact.api.db.Indexes;
+import org.vaccineimpact.api.db.InstantConverter;
 import org.vaccineimpact.api.db.Keys;
 import org.vaccineimpact.api.db.Public;
 import org.vaccineimpact.api.db.tables.records.CoverageSetUploadMetadataRecord;
@@ -40,7 +41,7 @@ import org.vaccineimpact.api.db.tables.records.CoverageSetUploadMetadataRecord;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CoverageSetUploadMetadata extends TableImpl<CoverageSetUploadMetadataRecord> {
 
-    private static final long serialVersionUID = 1169648889;
+    private static final long serialVersionUID = -623899268;
 
     /**
      * The reference instance of <code>public.coverage_set_upload_metadata</code>
@@ -68,7 +69,7 @@ public class CoverageSetUploadMetadata extends TableImpl<CoverageSetUploadMetada
     /**
      * The column <code>public.coverage_set_upload_metadata.uploaded_on</code>.
      */
-    public final TableField<CoverageSetUploadMetadataRecord, Timestamp> UPLOADED_ON = createField("uploaded_on", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).defaultValue(org.jooq.impl.DSL.field("CURRENT_TIMESTAMP", org.jooq.impl.SQLDataType.TIMESTAMP)), this, "");
+    public final TableField<CoverageSetUploadMetadataRecord, Instant> UPLOADED_ON = createField("uploaded_on", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).defaultValue(org.jooq.impl.DSL.field("CURRENT_TIMESTAMP", org.jooq.impl.SQLDataType.TIMESTAMP)), this, "", new InstantConverter());
 
     /**
      * The column <code>public.coverage_set_upload_metadata.filename</code>.
