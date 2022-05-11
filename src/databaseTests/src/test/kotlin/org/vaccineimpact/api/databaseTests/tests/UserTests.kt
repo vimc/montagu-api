@@ -24,6 +24,8 @@ import org.vaccineimpact.api.models.permissions.RoleAssignment
 import org.vaccineimpact.api.security.*
 import java.sql.Timestamp
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 class UserTests : RepositoryTests<UserRepository>()
 {
@@ -54,7 +56,7 @@ class UserTests : RepositoryTests<UserRepository>()
         withDatabase { db ->
             addTestUser(db)
         }
-        val now = Timestamp.from(Instant.now())
+        val now = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault())
         withRepo { repo ->
             repo.saveConfidentialityAgreement(username)
         }
@@ -597,7 +599,7 @@ class UserTests : RepositoryTests<UserRepository>()
             val hash = it.dsl.select(APP_USER.PASSWORD_HASH)
                     .from(APP_USER)
                     .where(APP_USER.USERNAME.eq("will"))
-                    .fetchOne().value1()
+                    .fetchSingle().value1()
             assertThat(UserHelper.encoder.matches("newpassword", hash)).isTrue()
         }
     }

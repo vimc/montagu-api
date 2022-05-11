@@ -56,7 +56,7 @@ class CreateUserTests : DatabaseTest()
             val hash = it.dsl.select(APP_USER.PASSWORD_HASH)
                     .from(APP_USER)
                     .where(APP_USER.USERNAME.eq(username))
-                    .fetchOne().value1()
+                    .fetchSingle().value1()
             assertThat(hash).isNull()
         }
 

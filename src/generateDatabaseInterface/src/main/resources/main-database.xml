@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.10.0.xsd">
+<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.16.5.xsd">
     <jdbc>
         <driver>${db_driver}</driver>
         <url>jdbc:postgresql://${db_host}:${db_port}/${db_name}</url>
@@ -8,27 +8,32 @@
     </jdbc>
 
     <generator>
-        <name>org.jooq.util.JavaGenerator</name>
+        <name>org.jooq.codegen.JavaGenerator</name>
 
         <database>
             <forcedTypes>
                 <forcedType>
                     <userType>java.time.Instant</userType>
                     <converter>org.vaccineimpact.api.db.InstantConverter</converter>
-                    <expression>last_logged_in</expression>
+                    <includeExpression>last_logged_in</includeExpression>
                 </forcedType>
                 <forcedType>
                     <userType>java.time.Instant</userType>
                     <converter>org.vaccineimpact.api.db.InstantConverter</converter>
-                    <expression>uploaded_on</expression>
+                    <includeExpression>uploaded_on</includeExpression>
                 </forcedType>
                 <forcedType>
                     <userType>java.time.Instant</userType>
                     <converter>org.vaccineimpact.api.db.InstantConverter</converter>
-                    <expression>added_on</expression>
+                    <includeExpression>added_on</includeExpression>
+                </forcedType>
+                <forcedType>
+                    <userType>java.time.Instant</userType>
+                    <converter>org.vaccineimpact.api.db.InstantConverter</converter>
+                    <includeExpression>timestamp</includeExpression>
                 </forcedType>
             </forcedTypes>
-            <name>org.jooq.util.postgres.PostgresDatabase</name>
+            <name>org.jooq.meta.postgres.PostgresDatabase</name>
             <inputSchema>public</inputSchema>
             <includes>.*</includes>
             <excludes>

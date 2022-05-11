@@ -108,7 +108,7 @@ class ClearBurdenEstimateSetTests : BurdenEstimateTests()
     private fun checkSetHasThisManyRows(expectedCount: Int)
     {
         JooqContext().use { db ->
-            val count = db.dsl.selectCount().from(BURDEN_ESTIMATE).fetchOne(0, Int::class.java)
+            val count = db.dsl.selectCount().from(BURDEN_ESTIMATE).fetchSingle(0, Int::class.java)
             assertThat(count).isEqualTo(expectedCount)
         }
     }

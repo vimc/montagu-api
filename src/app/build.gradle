@@ -28,7 +28,7 @@ dependencies {
     implementation "com.google.code.gson:gson:2.2.4"
     implementation "org.apache.commons:commons-lang3:3.7"
     implementation "org.postgresql:postgresql:42.2.1"
-    implementation "org.jooq:jooq:3.10.5"
+    implementation "org.jooq:jooq:3.16.6"
     implementation "org.jooq:jooq-meta:3.10.5"
     implementation "org.pac4j:spark-pac4j:2.2.0"
     implementation "org.pac4j:pac4j-http:2.2.1"
@@ -58,17 +58,6 @@ docker {
     name "${api_docker_name}:${api_docker_version}"
     file('Dockerfile')
     files tasks.distTar.outputs, "app.jar"
-}
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 copyConfig.finalizedBy 'showConfig'

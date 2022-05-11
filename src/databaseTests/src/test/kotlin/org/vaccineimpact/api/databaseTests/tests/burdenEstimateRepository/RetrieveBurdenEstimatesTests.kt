@@ -51,7 +51,7 @@ class RetrieveBurdenEstimatesTests : BurdenEstimateRepositoryTests()
             val outcomeId = it.dsl.select(Tables.BURDEN_OUTCOME.ID)
                     .from(Tables.BURDEN_OUTCOME)
                     .where(Tables.BURDEN_OUTCOME.CODE.eq("deaths"))
-                    .fetchOne().value1()
+                    .fetchSingle().value1()
 
             Triple(ids.responsibility, outcomeId, setId)
         }
@@ -87,7 +87,7 @@ class RetrieveBurdenEstimatesTests : BurdenEstimateRepositoryTests()
             val outcomeId = it.dsl.select(Tables.BURDEN_OUTCOME.ID)
                     .from(Tables.BURDEN_OUTCOME)
                     .where(Tables.BURDEN_OUTCOME.CODE.eq("deaths"))
-                    .fetchOne().value1()
+                    .fetchSingle().value1()
 
             Triple(ids.responsibility, outcomeId, setId)
         }
@@ -124,7 +124,7 @@ class RetrieveBurdenEstimatesTests : BurdenEstimateRepositoryTests()
             val outcomeId = it.dsl.select(Tables.BURDEN_OUTCOME.ID)
                     .from(Tables.BURDEN_OUTCOME)
                     .where(Tables.BURDEN_OUTCOME.CODE.eq("deaths"))
-                    .fetchOne().value1()
+                    .fetchSingle().value1()
 
             Triple(outcomeId, ids.responsibility, badSetId)
         }
@@ -157,7 +157,7 @@ class RetrieveBurdenEstimatesTests : BurdenEstimateRepositoryTests()
             val outcomeId = it.dsl.select(Tables.BURDEN_OUTCOME.ID)
                     .from(Tables.BURDEN_OUTCOME)
                     .where(Tables.BURDEN_OUTCOME.CODE.eq("deaths"))
-                    .fetchOne().value1()
+                    .fetchSingle().value1()
 
             Pair(outcomeId, setId)
         }
@@ -192,7 +192,7 @@ class RetrieveBurdenEstimatesTests : BurdenEstimateRepositoryTests()
             val outcomeId = it.dsl.select(Tables.BURDEN_OUTCOME.ID)
                     .from(Tables.BURDEN_OUTCOME)
                     .where(Tables.BURDEN_OUTCOME.CODE.eq("deaths"))
-                    .fetchOne().value1()
+                    .fetchSingle().value1()
 
             Triple(ids.responsibility, outcomeId, setId)
         }

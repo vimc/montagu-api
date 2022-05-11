@@ -25,7 +25,7 @@ class CreateModellingGroupTests : ModellingGroupRepositoryTests()
         withDatabase {
             val result = it.dsl.selectFrom(Tables.MODELLING_GROUP)
                     .where(Tables.MODELLING_GROUP.ID.eq("HW-NewName"))
-                    .fetchOne()
+                    .fetchSingle()
 
             assertThat(result[Tables.MODELLING_GROUP.INSTITUTION]).isEqualTo("Hogwarts")
             assertThat(result[Tables.MODELLING_GROUP.PI]).isEqualTo("Professor New Name")

@@ -35,13 +35,13 @@ class SaveCoverageTests : TouchstoneRepositoryTests()
         }
         withDatabase {
             val metadata = it.dsl.selectFrom(COVERAGE_SET_UPLOAD_METADATA)
-                    .fetchOne()
+                    .fetchSingle()
             assertThat(metadata[COVERAGE_SET_UPLOAD_METADATA.UPLOADED_BY]).isEqualTo("test.user")
             assertThat(metadata[COVERAGE_SET_UPLOAD_METADATA.UPLOADED_ON]).isEqualTo(now)
             assertThat(metadata[COVERAGE_SET_UPLOAD_METADATA.DESCRIPTION]).isEqualTo("desc")
 
             val set = it.dsl.selectFrom(COVERAGE_SET)
-                    .fetchOne()
+                    .fetchSingle()
 
             assertThat(set[COVERAGE_SET.COVERAGE_SET_UPLOAD_METADATA]).isEqualTo(metadata[COVERAGE_SET_UPLOAD_METADATA.ID])
             assertThat(set[COVERAGE_SET.TOUCHSTONE]).isEqualTo("t-1")
@@ -187,7 +187,7 @@ class SaveCoverageTests : TouchstoneRepositoryTests()
         }
         val result = withDatabase {
             it.dsl.selectFrom(COVERAGE)
-                    .fetchOne()
+                    .fetchSingle()
         }
         assertThat(result[COVERAGE.COVERAGE_SET]).isEqualTo(11)
         assertThat(result[COVERAGE.COUNTRY]).isEqualTo("AFG")

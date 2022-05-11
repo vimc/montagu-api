@@ -37,7 +37,7 @@ class CreateBurdenEstimateTests : BurdenEstimateTests()
         } andCheckObjectCreation createdSetLocation
 
         JooqContext().use { db ->
-            val record = db.dsl.fetchOne(BURDEN_ESTIMATE_SET, BURDEN_ESTIMATE_SET.ID.eq(setId.toInt()))
+            val record = db.dsl.fetchSingle(BURDEN_ESTIMATE_SET, BURDEN_ESTIMATE_SET.ID.eq(setId.toInt()))
             assertThat(record.modelRunParameterSet).isEqualTo(1)
         }
     }

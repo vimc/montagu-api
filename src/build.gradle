@@ -173,4 +173,15 @@ subprojects {
     jar.dependsOn "copySpec"
     jar.dependsOn "copyConfig"
     compileTestKotlin.dependsOn "copyConfig"
+
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "11"
+        }
+    }
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "11"
+        }
+    }
 }

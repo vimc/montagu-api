@@ -39,7 +39,7 @@ class ClearBurdenEstimateSetTests : BurdenEstimateRepositoryTests()
             repo.clearBurdenEstimateSet(setId, groupId, touchstoneVersionId, scenarioId)
         }
         withDatabase { db ->
-            val record = db.dsl.fetchOne(BURDEN_ESTIMATE_SET, BURDEN_ESTIMATE_SET.ID.eq(setId))
+            val record = db.dsl.fetchSingle(BURDEN_ESTIMATE_SET, BURDEN_ESTIMATE_SET.ID.eq(setId))
             assertThat(record.status).isEqualTo("empty")
         }
     }

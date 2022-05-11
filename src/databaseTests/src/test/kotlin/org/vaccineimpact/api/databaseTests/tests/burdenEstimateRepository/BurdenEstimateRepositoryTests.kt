@@ -145,7 +145,7 @@ abstract class BurdenEstimateRepositoryTests : RepositoryTests<BurdenEstimateRep
             : Int
     {
         val t = Tables.BURDEN_ESTIMATE_SET
-        val set = db.dsl.selectFrom(t).where(t.ID.eq(setId)).fetchOne()
+        val set = db.dsl.selectFrom(t).where(t.ID.eq(setId)).fetchSingle()
         Assertions.assertThat(set[t.MODEL_VERSION]).isEqualTo(returnedIds.modelVersion!!)
         Assertions.assertThat(set[t.RESPONSIBILITY]).isEqualTo(returnedIds.responsibility)
         Assertions.assertThat(set[t.UPLOADED_BY]).isEqualTo(username)

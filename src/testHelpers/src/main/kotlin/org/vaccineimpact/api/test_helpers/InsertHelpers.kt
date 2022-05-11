@@ -11,10 +11,8 @@ import org.vaccineimpact.api.security.UserHelper
 import org.vaccineimpact.api.security.ensureUserHasRole
 import java.math.BigDecimal
 import java.sql.Timestamp
-import java.time.Instant
-import java.time.LocalDateTime
+import java.time.*
 import java.time.LocalDateTime.*
-import java.time.ZoneOffset
 import java.util.*
 
 private val random = Random(0)
@@ -282,8 +280,8 @@ fun JooqContext.addBurdenEstimate(
     val outcomeId = this.dsl.select(BURDEN_OUTCOME.ID)
             .from(BURDEN_OUTCOME)
             .where(BURDEN_OUTCOME.CODE.eq(outcome))
-            .fetchOne().value1()
-    val countryId = this.dsl.fetchOne(COUNTRY, COUNTRY.ID.eq(country)).nid
+            .fetchSingle().value1()
+    val countryId = this.dsl.fetchSingle(COUNTRY, COUNTRY.ID.eq(country)).nid
     val record = this.dsl.newRecord(BURDEN_ESTIMATE).apply {
         this.burdenEstimateSet = setId
         this.country = countryId
@@ -467,7 +465,7 @@ fun JooqContext.addCoverageSetToScenario(scenarioId: String, touchstoneVersionId
             .fromJoinPath(SCENARIO, SCENARIO_DESCRIPTION)
             .where(SCENARIO.TOUCHSTONE.eq(touchstoneVersionId))
             .and(SCENARIO_DESCRIPTION.ID.eq(scenarioId))
-            .fetchOne()
+            .fetchSingle()
     return this.addCoverageSetToScenario(record[SCENARIO.ID], coverageSetId, order)
 }
 
@@ -477,7 +475,7 @@ fun JooqContext.addFocalCoverageSetToScenario(scenarioDescription: String, touch
             .fromJoinPath(SCENARIO, SCENARIO_DESCRIPTION)
             .where(SCENARIO.TOUCHSTONE.eq(touchstoneVersionId))
             .and(SCENARIO_DESCRIPTION.ID.eq(scenarioDescription))
-            .fetchOneInto(Int::class.java)
+            .fetchSingleInto(Int::class.java)
 
     this.addCoverageSetToScenario(scenarioId, coverageSetId, order)
 
@@ -567,7 +565,7 @@ fun JooqContext.fetchDemographicUnitId(name: String): Int
     return this.dsl.select(DEMOGRAPHIC_VALUE_UNIT.ID)
             .from(DEMOGRAPHIC_VALUE_UNIT)
             .where(DEMOGRAPHIC_VALUE_UNIT.NAME.eq(name))
-            .fetchOne().value1()
+            .fetchSingle().value1()
 }
 
 fun JooqContext.fetchGenders(): List<Int>
@@ -593,7 +591,8 @@ fun JooqContext.addDemographicStatisticType(type: String,
         this.genderIsApplicable = genderIsApplicable
         this.ageInterpretation = ageInterpretation
         this.yearStepSize = yearStepSize
-        this.referenceDate = java.sql.Date(System.currentTimeMillis())
+        this.referenceDate = Instant.ofEpochMilli(System.currentTimeMillis()).atZone(ZoneId.systemDefault())
+                .toLocalDate()
     }
 
     record.store()

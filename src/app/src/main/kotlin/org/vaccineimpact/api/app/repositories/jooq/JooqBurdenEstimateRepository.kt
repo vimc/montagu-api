@@ -232,7 +232,7 @@ class JooqBurdenEstimateRepository(
         val cohortSize = dsl.select(BURDEN_OUTCOME.ID)
                 .from(BURDEN_OUTCOME)
                 .where(BURDEN_OUTCOME.CODE.eq("cohort_size"))
-                .fetchAnyInto(Short::class.java)
+                .fetchSingleInto(Short::class.java)
 
         val outcomesIncludingCohort = (outcomes +  Pair(cohortSize, "cohort_size")).sortedBy { it.first }
 

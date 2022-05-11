@@ -29,7 +29,7 @@ class PopulateBurdenEstimateSetTests : BurdenEstimateRepositoryTests()
 
         withDatabase { db ->
             val t = Tables.BURDEN_ESTIMATE_SET
-            val set = db.dsl.selectFrom(t).where(t.ID.eq(setId)).fetchOne()
+            val set = db.dsl.selectFrom(t).where(t.ID.eq(setId)).fetchSingle()
             Assertions.assertThat(set[t.STATUS]).isEqualTo("partial")
         }
     }
@@ -46,7 +46,7 @@ class PopulateBurdenEstimateSetTests : BurdenEstimateRepositoryTests()
 
         withDatabase { db ->
             val t = Tables.BURDEN_ESTIMATE_SET
-            val set = db.dsl.selectFrom(t).where(t.ID.eq(setId)).fetchOne()
+            val set = db.dsl.selectFrom(t).where(t.ID.eq(setId)).fetchSingle()
             Assertions.assertThat(set[t.ORIGINAL_FILENAME]).isEqualTo("file.csv")
         }
     }
@@ -64,7 +64,7 @@ class PopulateBurdenEstimateSetTests : BurdenEstimateRepositoryTests()
 
         withDatabase { db ->
             val t = Tables.RESPONSIBILITY
-            val r = db.dsl.selectFrom(t).where(t.ID.eq(returnedIds.responsibility)).fetchOne()
+            val r = db.dsl.selectFrom(t).where(t.ID.eq(returnedIds.responsibility)).fetchSingle()
             Assertions.assertThat(r[t.CURRENT_BURDEN_ESTIMATE_SET]).isEqualTo(setId)
         }
     }

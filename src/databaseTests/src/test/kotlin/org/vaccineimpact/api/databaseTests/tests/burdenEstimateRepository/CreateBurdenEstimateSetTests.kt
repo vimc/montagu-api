@@ -60,7 +60,7 @@ class CreateBurdenEstimateSetTests : BurdenEstimateRepositoryTests()
             val actualSetId = db.dsl.select(RESPONSIBILITY.CURRENT_BURDEN_ESTIMATE_SET)
                     .from(RESPONSIBILITY)
                     .where(RESPONSIBILITY.ID.eq(returnedIds!!.responsibility))
-                    .fetchOneInto(Int::class.java)
+                    .fetchSingleInto(Int::class.java)
 
             assertThat(actualSetId).isNotEqualTo(setId)
         }

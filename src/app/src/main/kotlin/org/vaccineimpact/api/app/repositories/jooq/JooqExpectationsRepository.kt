@@ -46,7 +46,7 @@ class JooqExpectationsRepository(dsl: DSLContext)
         val id = dsl.select(RESPONSIBILITY.EXPECTATIONS)
                 .from(RESPONSIBILITY)
                 .where(RESPONSIBILITY.ID.eq(responsibilityId))
-                .fetchOne()
+                .fetchSingle()
                 .value1()
                 ?: throw UnknownObjectError(responsibilityId, "burden-estimate-expectation")
 
@@ -55,7 +55,7 @@ class JooqExpectationsRepository(dsl: DSLContext)
 
     override fun getExpectationsById(expectationsId: Int): ExpectationMapping
     {
-        val basicData = dsl.fetchAny(Tables.expectations, Tables.expectations.ID.eq(expectationsId))
+        val basicData = dsl.fetchSingle(Tables.expectations, Tables.expectations.ID.eq(expectationsId))
         val expectations = basicData.withCountriesAndOutcomes()
         val scenarioRecords = dsl.select(SCENARIO_DESCRIPTION.ID, SCENARIO_DESCRIPTION.DISEASE)
                 .fromJoinPath(RESPONSIBILITY, SCENARIO, SCENARIO_DESCRIPTION)

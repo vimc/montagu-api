@@ -177,7 +177,7 @@ class PopulateBurdenEstimateTests : BurdenEstimateTests()
             assertThat(records).isNotEmpty
 
             val metadata = db.dsl.selectFrom(BURDEN_ESTIMATE_SET)
-                    .fetchOne()
+                    .fetchSingle()
             assertThat(metadata[BURDEN_ESTIMATE_SET.ORIGINAL_FILENAME]).isEqualTo("test.csv")
         }
     }

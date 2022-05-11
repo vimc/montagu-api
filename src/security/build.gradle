@@ -4,7 +4,7 @@ dependencies {
     implementation 'commons-codec:commons-codec:1.11'
     implementation 'org.apache.httpcomponents:httpclient:4.5.6'
     implementation 'org.abstractj.kalium:kalium:0.7.0'
-    implementation "org.jooq:jooq:3.10.5"
+    implementation "org.jooq:jooq:3.16.6"
     implementation "org.jooq:jooq-meta:3.10.5"
 
     testImplementation "junit:junit:4.12"
@@ -29,15 +29,4 @@ task install_libsodium() {
 
 build {
     dependsOn 'install_libsodium'
-}
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }

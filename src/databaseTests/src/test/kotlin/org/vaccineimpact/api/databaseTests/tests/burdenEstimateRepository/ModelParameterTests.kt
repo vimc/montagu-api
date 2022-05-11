@@ -35,7 +35,7 @@ class ModelParameterTests : BurdenEstimateRepositoryTests()
 
             val record = db.dsl.select()
                     .fromJoinPath(Tables.MODEL_RUN_PARAMETER_SET, Tables.UPLOAD_INFO)
-                    .fetchOne()
+                    .fetchSingle()
 
             Assertions.assertThat(record[Tables.MODEL_RUN_PARAMETER_SET.MODEL_VERSION]).isEqualTo(returnedIds!!.modelVersion!!)
             Assertions.assertThat(record[Tables.MODEL_RUN_PARAMETER_SET.RESPONSIBILITY_SET]).isEqualTo(returnedIds!!.responsibilitySetId)

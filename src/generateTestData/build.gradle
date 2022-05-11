@@ -2,7 +2,7 @@ apply plugin: 'application'
 mainClassName = "org.vaccineimpact.api.generateTestData.AppKt"
 
 dependencies {
-    implementation "org.jooq:jooq:3.10.5"
+    implementation "org.jooq:jooq:3.16.6"
     implementation project(":testHelpers")
     implementation project(":databaseInterface")
 }

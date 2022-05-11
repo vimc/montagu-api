@@ -47,7 +47,7 @@ class JoinPathStep(
 
         foreignKeyField = reference.fields.single() as TableField<*, Any>
         val targetTable = foreignKeyField.table.getOther(from, to)
-        primaryKeyField = targetTable.primaryKey.fields.single() as Field<Any>
+        primaryKeyField = targetTable?.primaryKey?.fields?.single() as Field<Any>
     }
 
     private fun throwKeyProblem(keys: Iterable<ForeignKey<*, *>>): ForeignKey<*, *>

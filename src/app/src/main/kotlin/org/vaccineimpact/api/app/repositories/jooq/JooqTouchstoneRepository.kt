@@ -524,7 +524,7 @@ class JooqTouchstoneRepository(
         {
             GENDER.CODE.eq("both")
         }
-        return dsl.fetchOne(GENDER, genderFilter).id
+        return dsl.fetchSingle(GENDER, genderFilter).id
     }
 
     private fun getScenariosFromRecords(records: Result<Record>): List<Scenario>
@@ -636,7 +636,7 @@ class JooqTouchstoneRepository(
             dsl.select(SCENARIO_DESCRIPTION.DISEASE)
                     .from(SCENARIO_DESCRIPTION)
                     .where(SCENARIO_DESCRIPTION.ID.eq(scenarioDescriptionId))
-                    .fetchOne()[SCENARIO_DESCRIPTION.DISEASE]
+                    .fetchSingle()[SCENARIO_DESCRIPTION.DISEASE]
 
     private fun includeGenderInCoverage(touchstoneVersionId: String): Boolean = touchstoneVersionId > "2019"
 

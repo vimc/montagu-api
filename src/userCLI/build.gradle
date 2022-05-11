@@ -8,7 +8,7 @@ mainClassName = "org.vaccineimpact.api.security.AppKt"
 dependencies {
     implementation "org.slf4j:slf4j-simple:1.7.25"
     implementation "org.simplejavamail:simple-java-mail:4.4.5"
-    implementation "org.jooq:jooq:3.10.5"
+    implementation "org.jooq:jooq:3.16.6"
 
     implementation project(":security")
     implementation project(":models")
@@ -35,17 +35,6 @@ docker {
     name "${cli_docker_name}:${cli_docker_version}"
     file('Dockerfile')
     files tasks.distTar.outputs, "userCLI.jar"
-}
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 // We run the tests as a suite (see UserCLITestSuite)
