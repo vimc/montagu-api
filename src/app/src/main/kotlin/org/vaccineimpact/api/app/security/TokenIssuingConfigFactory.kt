@@ -33,9 +33,7 @@ class TokenIssuingBasicAuthClient(authenticator: DatabasePasswordAuthenticator) 
         // XHR.
         //
         // We override that behaviour with a non-standard scheme to avoid this
-        // issue.
-        //
-        // Not that pac4j forces a `WWW-Authenticate` on 401 errors, so doing
+        // issue. pac4j forces a `WWW-Authenticate` on 401 errors, so doing
         // nothing here wouldn't be enough.
         context.setResponseHeader("WWW-Authenticate", "X-Basic");
     }
