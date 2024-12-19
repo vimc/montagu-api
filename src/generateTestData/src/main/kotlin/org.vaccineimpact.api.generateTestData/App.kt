@@ -32,6 +32,9 @@ fun main(args: Array<String>) {
 
         addAllTestDataForOp2018v1(db, demographicTestData)
 
+        db.addTouchstone("202410rfp", "Rfp 2024")
+        addAllTestDataFor202410Rfpv1(db, demographicTestData)
+
         db.addTouchstone("fake-rfp", "Fake request for proposals")
         db.addTouchstoneVersion("fake-rfp", 1, "Fake request for proposals (v1)", "finished")
 
@@ -177,6 +180,32 @@ fun addAllTestDataForOp2018v1(db: JooqContext, demographicTestData: DemographicT
 
     db.addExpectations(responsibilityId2018, countries = db.fetchCountries(2), outcomes = db.fetchOutcomes(2),
             cohortMinInclusive = 1980, cohortMaxInclusive = null)
+    db.addExpectations(secondResponsibilityId2018, countries = db.fetchCountries(96), outcomes = db.fetchOutcomes(1))
+
+}
+
+fun addAllTestDataFor202410Rfpv1(db: JooqContext, demographicTestData: DemographicTestData){
+    //Add all test data and relationships for Touchstone Version "op-2018-1"
+    db.addTouchstoneVersion("202410rfp", 1, "Operational Forecast 2018 (v1)", "open")
+
+    demographicTestData.generate("202410rfp-1", listOf("YF"))
+    val yfRoutine2018 = db.addScenarioToTouchstone("202410rfp-1", "yf-routine")
+    val yfCampaign2018 = db.addScenarioToTouchstone("202410rfp-1", "yf-campaign")
+
+    val yfNoVacc2018 = db.addCoverageSet("202410rfp-1", "Yellow Fever, no vaccination", "YF", "none", "none")
+    val yfRoutineWithout2018 = db.addCoverageSet("202410rfp-1", "Yellow Fever, routine, without GAVI", "YF", "without", "routine")
+    db.generateCoverageData(yfNoVacc2018)
+    db.generateCoverageData(yfRoutineWithout2018)
+
+    db.addCoverageSetToScenario("yf-routine", "202410rfp-1", yfNoVacc2018, 3)
+    db.addCoverageSetToScenario("yf-routine", "202410rfp-1", yfRoutineWithout2018, 4)
+
+    val setId2018 = db.addResponsibilitySet("IC-Garske", "202410rfp-1", "incomplete")
+    val responsibilityId2018 = db.addResponsibility(setId2018, yfRoutine2018)
+    val secondResponsibilityId2018 = db.addResponsibility(setId2018, yfCampaign2018)
+
+    db.addExpectations(responsibilityId2018, countries = db.fetchCountries(2), outcomes = db.fetchOutcomes(2),
+        cohortMinInclusive = 1980, cohortMaxInclusive = null)
     db.addExpectations(secondResponsibilityId2018, countries = db.fetchCountries(96), outcomes = db.fetchOutcomes(1))
 
 }
