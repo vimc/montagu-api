@@ -52,7 +52,7 @@ To run Blackbox tests from the command line, after running the above 2 commands,
 Run `./gradlew dependencyUpdates` and then manually update as required.
 
 ## Project anatomy
-At the top level we have four folders of note:
+At the top level we have six folders of note:
 * `buildkite/`: Contains a Buildkite pipeline along with scripts for testing and building the API and CLI.
 * `docker/`: Contains docker files for images used in testing and compiling. None of these files is for the API
 image itself, which is created via the Gradle `distDocker` task.
