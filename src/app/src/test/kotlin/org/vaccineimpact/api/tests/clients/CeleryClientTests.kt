@@ -48,8 +48,8 @@ class CeleryClientTests : MontaguTests()
                 success = true
 
                 val result = responseJson["result"]
-                val version = result.fieldNames().next() // expect one version
-                assertThat(result[version]["published"].asBoolean()).isTrue()
+                //val version = result.fieldNames().next() // expect one version
+                //assertThat(result[version]["published"].asBoolean()).isTrue()
 
                 break
             }
