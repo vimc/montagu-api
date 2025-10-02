@@ -3,6 +3,8 @@ package org.vaccineimpact.api.app.app_start
 import org.docopt.Docopt
 import org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY
 import org.vaccineimpact.api.app.repositories.RepositoryFactory
+import org.vaccineimpact.api.app.repositories.jooq.JooqUserRepository
+import org.vaccineimpact.api.db.JooqContext
 import java.io.File
 
 const val doc = """
@@ -29,6 +31,14 @@ fun main(args: Array<String>)
         waitForGoSignal()
         val api = MontaguApi()
         api.run(RepositoryFactory())
+
+        println("TESTING DB")
+        return JooqContext().use { db ->
+            val dsl = db.dsl
+            val repo = JooqUserRepository(dsl)
+            val roles = repo.globalRoles()
+            println("Found ${roles.count()} user roles")
+        }
     }
 }
 
