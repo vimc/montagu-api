@@ -18,11 +18,13 @@ Usage:
 fun main(args: Array<String>)
 {
     val options = Docopt(doc).parse(args.toList())
+
+    System.setProperty(DEFAULT_LOG_LEVEL_KEY, "DEBUG")
     // See "Generating a root token" in README.md
     if (options["generate-token"] as Boolean)
     {
         // Bit of a hack to disable logging messing up our neat output
-        System.setProperty(DEFAULT_LOG_LEVEL_KEY, "WARN")
+        //System.setProperty(DEFAULT_LOG_LEVEL_KEY, "WARN")
         @Suppress("UNCHECKED_CAST")
         println(RootTokenGenerator().generateCompressedToken(options["<permission>"] as List<String>))
     }
