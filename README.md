@@ -1,5 +1,7 @@
 # Montagu API
 
+**THIS REPO IS BEING ARCHIVED AS THE MONTAGU API CODEBASE HAS BEEN MOVED TO [MONTAGU SYSTEM](https://github.com/vimc/montagu-system)**
+
 [![Build Status](https://badge.buildkite.com/172ef7d0efc887cb5810989791106d1741337d407ada9c97dc.svg?branch=master)](https://buildkite.com/mrc-ide/montagu-api)
 [![codecov](https://codecov.io/gh/vimc/montagu-api/branch/master/graph/badge.svg)](https://codecov.io/gh/vimc/montagu-api)
 
