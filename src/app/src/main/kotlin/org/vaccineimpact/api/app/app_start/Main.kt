@@ -3,6 +3,8 @@ package org.vaccineimpact.api.app.app_start
 import org.docopt.Docopt
 import org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY
 import org.vaccineimpact.api.app.repositories.RepositoryFactory
+import org.vaccineimpact.api.app.repositories.jooq.JooqUserRepository
+import org.vaccineimpact.api.db.JooqContext
 import java.io.File
 
 const val doc = """
@@ -16,11 +18,13 @@ Usage:
 fun main(args: Array<String>)
 {
     val options = Docopt(doc).parse(args.toList())
+
+    System.setProperty(DEFAULT_LOG_LEVEL_KEY, "DEBUG")
     // See "Generating a root token" in README.md
     if (options["generate-token"] as Boolean)
     {
         // Bit of a hack to disable logging messing up our neat output
-        System.setProperty(DEFAULT_LOG_LEVEL_KEY, "WARN")
+        //System.setProperty(DEFAULT_LOG_LEVEL_KEY, "WARN")
         @Suppress("UNCHECKED_CAST")
         println(RootTokenGenerator().generateCompressedToken(options["<permission>"] as List<String>))
     }
@@ -29,6 +33,14 @@ fun main(args: Array<String>)
         waitForGoSignal()
         val api = MontaguApi()
         api.run(RepositoryFactory())
+
+        println("TESTING DB")
+        return JooqContext().use { db ->
+            val dsl = db.dsl
+            val repo = JooqUserRepository(dsl)
+            val roles = repo.globalRoles()
+            println("Found ${roles.count()} user roles")
+        }
     }
 }
 

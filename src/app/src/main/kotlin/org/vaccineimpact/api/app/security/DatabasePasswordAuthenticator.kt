@@ -47,6 +47,11 @@ class DatabasePasswordAuthenticator : Authenticator
     {
         return JooqContext().use { db ->
             val repo = JooqUserRepository(db.dsl)
+
+            println("TESTING DB IN VALIDATE EMAIL")
+            val users = repo.allWithRoles()
+            println("Found ${users.count()} users")
+
             val user = repo.getUserByEmail(email)
             if (user == null)
             {
